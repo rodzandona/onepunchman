@@ -1,0 +1,64 @@
+# Build results
+bin/
+obj/
+out/
+publish/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Logs / Dumps
+*.log
+*.tlog
+*.dmp
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Configuração local (não versionar senhas/chaves)
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.json.user
+
+# Sistema
+*.DS_Store
+Thumbs.db
+
+# Test results
+TestResult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# Rider
+.idea/
+
+# Cache
+*.swp
+*.tmp
+*.temp
+*.bak
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Se tiver frontend junto (Ionic/React/Angular)
+node_modules/
+dist/
+wwwroot/lib/
