@@ -129,7 +129,7 @@ internal class Program
 
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("api", new Microsoft.OpenApi.Models.OpenApiInfo
+                c.SwaggerDoc("api", new OpenApiInfo
                 {
                     Title = "API - OnePunchMan Management",
                     Description = "Documento da API - OnePunchMan Management",
@@ -138,6 +138,9 @@ internal class Program
             });
 
             builder.Services.AddScoped<AuthService>();
+            builder.Services.AddTransient<ExcelService>();
+            builder.Services.AddTransient<EmailService>();
+
 
 
         }

@@ -1,0 +1,8 @@
+#preview {
+  width: 320px;   /* dá um tamanho real pro navegador ativar a câmera */
+  height: 240px;
+  position: absolute;
+  top: -9999px;   /* joga pra fora da tela */
+  left: -9999px;
+  opacity: 1;     /* mantém ativo */
+}

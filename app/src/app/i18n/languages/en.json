@@ -1,0 +1,18 @@
+{
+  "HOME": {
+    "PLACEHOLDER_BOX": "Enter the box code...",
+    "NEW_BOX": "New Box",
+    "FINISH_CHECK": "Finish Check",
+    "COUNTER_LABEL": "Scanned products"
+  },
+  "SETTINGS": {
+    "LOGOUT": "Logout",
+    "APP_VERSION": "App Version",
+    "VERSION_COMPILE": "Compile Version"
+  },
+  "EMAIL": {
+    "SEND": "Send email",
+    "SUBJECT": "Subject",
+    "BODY": "Message"
+  }
+}

@@ -1,0 +1,91 @@
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.circle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e0e0e0;
+}
+
+.circle-icon ion-icon {
+  font-size: 16px;
+  color: #555;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin: 2rem 0;
+}
+
+.logo-container img {
+  max-width: 150px;
+  height: auto;
+}
+
+.list-md.list-inset {
+  width: 100% !important;
+  -webkit-margin-start: 0px !important;
+  margin-inline-start: 0px !important;
+  -webkit-margin-end: 0px !important;
+  margin-inline-end: 0px !important;
+}
+
+/* Remove margens e faz ocupar toda a largura */
+.custom-list {
+  width: 100% !important;
+  margin: 0 !important;
+  margin-top: auto; 
+  margin-bottom: auto; 
+  padding: 0 !important;
+  border-top: 1px solid #dcdcdc;
+  border-bottom: 1px solid #dcdcdc;
+}
+
+/* Ajusta itens para ficarem colados sem espaçamento extra */
+.custom-list ion-item {
+  --padding-start: 16px;
+  --inner-padding-end: 16px;
+  --border-color: #dcdcdc;
+  --inner-border-width: 0; /* reseta borda interna */
+  --border-width: 0 0 1px 0; /* só borda embaixo */
+}
+
+.custom-list ion-item:last-child {
+  --border-width: 0; /* remove borda embaixo do último */
+}
+
+ion-content {
+  --padding-start: 0 !important;
+  --padding-end: 0 !important;
+  --padding-top: 0 !important;
+  --padding-bottom: 0 !important;
+  align-content: center
+}
+
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* logo em cima, lista no meio, espaço embaixo */
+
+}
+
+/* Garante que o wrapper da sua página ocupa tudo */
+.center-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+
+

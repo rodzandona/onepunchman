@@ -3,6 +3,12 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    loadChildren: () => import('./tabs/tabs.routes').then((m) => m.routes),
+    loadComponent: () => import('./pages/home/home.page').then( m => m.HomePage),
+    data: { title: 'Home'}
+  },
+  {
+    path: 'settings',
+    loadComponent: () => import('./pages/settings/settings.page').then( m => m.SettingsPage),
+    data: { title: 'Settings'}
   },
 ];

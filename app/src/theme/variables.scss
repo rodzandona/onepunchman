@@ -1,2 +1,10 @@
-// For information on how to create your own theme, please see:
-// http://ionicframework.com/docs/theming/
+:root {
+    --ion-font-family: "Inter", sans-serif;
+}
+
+.inner-scroll {
+    -webkit-padding-start: 0px !important;
+    padding-inline-start: 0px !important;
+    -webkit-padding-end: 0px !important;
+    padding-inline-end: 0px !important;
+}

@@ -1,0 +1,34 @@
+<app-header></app-header>
+
+<ion-content class="ion-padding center-content">
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <img src="assets/img/logo-jnj.png" alt="Logo" />
+  </div>
+  
+  <!-- List -->
+  <ion-list lines="full" class="custom-list">
+  <ion-item>
+    <ion-icon name="person-circle-outline" style="font-size: 40px; color: #555;" slot="start"></ion-icon>
+    <ion-label>
+      <h2>admin_syspack</h2>
+    </ion-label>
+    <ion-button color="danger" size="small" slot="end">{{ dictionary.get('SETTINGS.LOGOUT') }}</ion-button>
+  </ion-item>
+  
+  <ion-item>
+    <ion-label>{{ dictionary.get('SETTINGS.APP_VERSION') }}</ion-label>
+    <ion-note slot="end">{{ app_version }}</ion-note>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>{{ dictionary.get('SETTINGS.VERSION_COMPILE') }}</ion-label>
+    <ion-note slot="end">{{ app_compile }}</ion-note>
+  </ion-item>
+</ion-list>
+
+<app-footer></app-footer>
+</ion-content>
+
+

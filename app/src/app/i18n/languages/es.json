@@ -1,0 +1,18 @@
+{
+  "HOME": {
+    "PLACEHOLDER_BOX": "Ingrese el código de la caja...",
+    "NEW_BOX": "Nueva Caja",
+    "FINISH_CHECK": "Finalizar Revisión",
+    "COUNTER_LABEL": "Productos escaneados"
+  },
+  "SETTINGS": {
+    "LOGOUT": "Salir",
+    "APP_VERSION": "Versión de la App",
+    "VERSION_COMPILE": "Versión de Compilación"
+  },
+  "EMAIL": {
+    "SEND": "Enviar correo",
+    "SUBJECT": "Asunto",
+    "BODY": "Mensaje"
+  }
+}

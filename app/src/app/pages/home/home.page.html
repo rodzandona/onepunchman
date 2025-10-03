@@ -1,0 +1,49 @@
+<ion-content class="ion-padding">
+  <!-- Box -->
+  <div class="box-input">
+    <ion-input
+      #boxInput
+      [(ngModel)]="currentBox"
+      [placeholder]="dictionary.get('HOME.PLACEHOLDER_BOX').toUpperCase()"
+      class="custom-box-input"
+      type="text"
+      (ionInput)="onBoxChange($event)"
+      (keyup.enter)="confirmBox()"
+      [disabled]="isBoxLocked"
+      [ngClass]="{ 'disabled-box': isBoxLocked }"
+    ></ion-input>
+    <!-- Counter -->
+    <div class="ion-text-center counter">
+      <h1>{{ totalProducts }}</h1>
+    </div>
+  </div>
+
+  <app-barcode *ngIf="isBoxLocked" (scanned)="onProductScanned($event)"></app-barcode>
+
+  <!-- Products list -->
+  <ion-list *ngIf="lastProducts.length > 0">
+    <ion-item *ngFor="let product of lastProducts"> {{ product }} </ion-item>
+  </ion-list>
+
+  <!-- Buttons -->
+  <div class="buttons-container">
+    <ion-button
+      expand="block"
+      color="danger"
+      [disabled]="!currentBox  || lastProducts.length === 0"
+      (click)="newBox()"
+    >
+      {{ dictionary.get('HOME.NEW_BOX') }}
+    </ion-button>
+    <ion-button
+      expand="block"
+      color="danger"
+      [disabled]="!currentBox  || lastProducts.length === 0"
+      (click)="finish()"
+    >
+      {{ dictionary.get('HOME.FINISH_CHECK') }}
+    </ion-button>
+  </div>
+</ion-content>
+
+<app-footer></app-footer>

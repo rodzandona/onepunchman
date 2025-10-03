@@ -1,0 +1,18 @@
+{
+  "HOME": {
+    "PLACEHOLDER_BOX": "Aguardando Caixa...",
+    "NEW_BOX": "Nova Caixa",
+    "FINISH_CHECK": "Finalizar Conferência",
+    "COUNTER_LABEL": "Produtos escaneados"
+  },
+  "SETTINGS": {
+    "LOGOUT": "Sair",
+    "APP_VERSION": "Versão do App",
+    "VERSION_COMPILE": "Versão de Compilação"
+  },
+  "EMAIL": {
+    "SEND": "Enviar e-mail",
+    "SUBJECT": "Assunto",
+    "BODY": "Mensagem"
+  }
+}
