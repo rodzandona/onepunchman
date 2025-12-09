@@ -12,7 +12,7 @@ export default function MenuBar({ activeTab, onTabChange }: MenuBarProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 w-full z-50 border-t border-gray-200 py-3 bg-white sm:bg-transparent sm:border-0 sm:py-0"
+      className="fixed bottom-0 left-0 w-full z-50 border-t border-gray-200 py-3 bg-white sm:border-0 sm:py-0"
     >
       <div
         className="flex justify-center"
