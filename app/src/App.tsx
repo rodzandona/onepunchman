@@ -3,6 +3,8 @@ import MenuBar from './components/MenuBar'
 import Home from './pages/Home'
 import Settings from './pages/Settings'
 
+
+
 function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'settings'>('home')
 
