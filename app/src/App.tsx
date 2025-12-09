@@ -7,7 +7,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'settings'>('home')
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50">
       {/* Conteúdo principal */}
       <main className="flex-1 overflow-y-auto pb-28">
         {activeTab === 'home' ? <Home /> : <Settings />}
