@@ -24,33 +24,33 @@ export default function MenuBar({ activeTab, onTabChange }: MenuBarProps) {
             onClick={() => onTabChange('home')}
             className={`${baseButtonClasses} ${
               activeTab === 'home'
-                  ? 'bg-white text-primary shadow-[1px_1px_1px_rgba(0,0,0,0.10)] transform -translate-y-0.5 border-1 border-[#D82B14]'
+                  ? 'bg-white text-[#D82B14] shadow-[1px_1px_1px_rgba(0,0,0,0.10)] transform -translate-y-0.5 border-1 border-[#D82B14]'
                 : 'text-gray-500 hover:bg-white/80 hover:text-gray-700 hover:shadow-sm border border-gray-200'
             } sm:py-2 sm:px-0`}
           >
             <Icon
               icon="solar:home-angle-linear"
               className={`w-6 h-6 mb-1 transition-all duration-300 ${
-                activeTab === 'home' ? 'text-primary scale-110' : 'text-gray-400'
+                activeTab === 'home' ? 'text-[#D82B14] scale-110' : 'text-gray-400'
               }`}
             />
-            <span className="text-xs font-semibold">Início</span>
+            <span className={`text-xs font-semibold ${activeTab === 'home' ? 'text-[#D82B14]' : ''}`}>Início</span>
           </button>
           <button
             onClick={() => onTabChange('settings')}
             className={`${baseButtonClasses} ${
               activeTab === 'settings'
-                  ? 'bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] transform -translate-y-0.5 border-1 border-[#D82B14]'
+                  ? 'bg-white text-[#D82B14] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transform -translate-y-0.5 border-1 border-[#D82B14]'
                 : 'text-gray-500 hover:bg-white/80 hover:text-gray-700 hover:shadow-sm border border-gray-200'
             } sm:py-2 sm:px-0`}
           >
             <Icon
               icon="solar:settings-linear"
               className={`w-6 h-6 mb-1 transition-all duration-300 ${
-                activeTab === 'settings' ? 'text-primary scale-110' : 'text-gray-400'
+                activeTab === 'settings' ? 'text-[#D82B14] scale-110' : 'text-gray-400'
               }`}
             />
-            <span className="text-xs font-semibold">Config</span>
+            <span className={`text-xs font-semibold ${activeTab === 'settings' ? 'text-[#D82B14]' : ''}`}>Config</span>
           </button>
         </div>
       </div>
