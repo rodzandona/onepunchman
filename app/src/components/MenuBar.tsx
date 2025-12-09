@@ -7,7 +7,7 @@ interface MenuBarProps {
 
 export default function MenuBar({ activeTab, onTabChange }: MenuBarProps) {
   return (
-    <nav className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl p-3 shadow-xl z-50 w-[calc(100%-2rem)] max-w-md">
+    <nav id="main-footer" className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-2xl p-3 shadow-xl z-50 w-[calc(100%-2rem)] max-w-md">
       <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
         {/* Botão Home */}
         <button
