@@ -1,28 +1,20 @@
-import { useEffect, useRef } from 'react';
+import { forwardRef } from "react";
+import { Input } from "./ui/input";
 
-interface BarcodeProps {
-  onScanned: (code: string) => void;
-}
+type BarcodeProps = {
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+};
 
-export default function Barcode({ onScanned }: BarcodeProps) {
-  const bufferRef = useRef('');
+const Barcode = forwardRef<HTMLInputElement, BarcodeProps>(({ onKeyDown }, ref) => {
+  return (
+    <Input
+      ref={ref}
+      onKeyDown={onKeyDown}
+      className="absolute opacity-0 h-0 w-0 p-0 m-0 pointer-events-none"
+      autoFocus
+    />
+  );
+});
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        if (bufferRef.current.trim() !== '') {
-          onScanned(bufferRef.current.toUpperCase());
-          bufferRef.current = '';
-        }
-      } else {
-        bufferRef.current += event.key;
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [onScanned]);
-
-  return null;
-}
+Barcode.displayName = "Barcode";
+export default Barcode;

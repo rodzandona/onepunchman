@@ -1,4 +1,3 @@
-// src/services/export.service.ts
 import { api } from "./http/httpClient";
 import type { Box } from "@/types/box.type";
 

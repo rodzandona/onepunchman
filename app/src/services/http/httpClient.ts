@@ -1,3 +1,8 @@
+import { environment } from "@/environments/environment";
+
+
+const API_URL = environment.apiUrl
+
 export class HttpClient {
   private baseUrl: string;
 
@@ -55,4 +60,4 @@ export class HttpClient {
 }
 
 // Instância global
-export const api = new HttpClient("http://localhost:5243/api");
+export const api = new HttpClient(API_URL);
