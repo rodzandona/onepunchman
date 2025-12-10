@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import type { Box } from "@/types/box.type";
 
 export default function Home() {
+  const [boxes, setBoxes] = useState<Box[]>([]);
+  const [selectedBoxIndex, setSelectedBoxIndex] = useState<number | null>(null);
+
   const [boxName, setBoxName] = useState("");
   const [locked, setLocked] = useState(false);
 
@@ -17,28 +21,26 @@ export default function Home() {
 
   const barcodeRef = useRef<HTMLInputElement>(null);
 
-  /** Mantém foco para escaneamento */
+  /* Mantém foco */
   useEffect(() => {
     if (locked) barcodeRef.current?.focus();
   }, [locked, items]);
 
-  /** 🔥 Nunca perder foco */
   useEffect(() => {
     function keepFocus() {
       if (locked && document.activeElement !== barcodeRef.current) {
         barcodeRef.current?.focus();
       }
     }
-
     document.addEventListener("click", keepFocus);
     document.addEventListener("focusin", keepFocus);
-
     return () => {
       document.removeEventListener("click", keepFocus);
       document.removeEventListener("focusin", keepFocus);
     };
   }, [locked]);
 
+  /* Calcula área sem footer */
   useEffect(() => {
     const footer = document.getElementById("main-footer");
     if (!footer) return;
@@ -56,13 +58,44 @@ export default function Home() {
     return () => window.removeEventListener("resize", updateFooterHeight);
   }, []);
 
+  /* Entrada da caixa (Enter) */
   function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" && boxName.trim()) {
-      setLocked(true);
-      setTimeout(() => barcodeRef.current?.focus(), 50);
+    if (e.key !== "Enter") return;
+
+    const name = boxName.trim();
+    if (!name) return;
+
+    // Se ainda não existe a caixa, criar agora!
+    if (selectedBoxIndex === null) {
+      const newBox: Box = {
+        BoxCode: name,
+        Products: []
+      };
+
+      setBoxes(prev => [...prev, newBox]);
+      setSelectedBoxIndex(boxes.length); // seleciona a caixa recém criada
+    }
+
+    setLocked(true);
+    setTimeout(() => barcodeRef.current?.focus(), 50);
+  }
+
+
+  /* Sincroniza alteração na caixa selecionada */
+  function syncSelectedBox(updatedProducts: string[]) {
+    if (selectedBoxIndex !== null) {
+      setBoxes(prev => {
+        const draft = [...prev];
+        draft[selectedBoxIndex] = {
+          ...draft[selectedBoxIndex],
+          Products: updatedProducts
+        };
+        return draft;
+      });
     }
   }
 
+  /* Scanner automático */
   function handleAutomaticScan(e: React.KeyboardEvent<HTMLInputElement>) {
     if (!locked) return;
 
@@ -73,9 +106,9 @@ export default function Home() {
     }
   }
 
+  /* Adiciona item */
   function addBarcode(code: string) {
-    const exists = items.some((i) => i.code === code);
-
+    const exists = items.some(i => i.code === code);
     if (exists) {
       toast.warning("Este item já está na caixa!", {
         description: code,
@@ -85,37 +118,76 @@ export default function Home() {
       return;
     }
 
-    setItems((prev) => [...prev, { code, flash: true }]);
+    const updatedItems = [...items, { code, flash: true }];
+    setItems(updatedItems);
+
+    /* Atualiza a caixa selecionada imediatamente */
+    if (selectedBoxIndex !== null) {
+      setBoxes(prev => {
+        const draft = [...prev];
+        draft[selectedBoxIndex].Products = updatedItems.map(x => x.code);
+        return draft;
+      });
+    }
 
     setTimeout(() => {
-      setItems((prev) =>
-        prev.map((i) =>
-          i.code === code ? { ...i, flash: false } : i
-        )
+      setItems(prev =>
+        prev.map(i => i.code === code ? { ...i, flash: false } : i)
       );
     }, 500);
   }
 
+
+  /* Remove item */
   function removeItem(code: string) {
-    setItems((prev) =>
-      prev.map((i) =>
-        i.code === code ? { ...i, removing: true } : i
-      )
+    setItems(prev =>
+      prev.map(i => i.code === code ? { ...i, removing: true } : i)
     );
 
     setTimeout(() => {
-      setItems((prev) => prev.filter((i) => i.code !== code));
+      const updated = items.filter(i => i.code !== code);
+      setItems(updated);
+      syncSelectedBox(updated.map(x => x.code));
     }, 300);
   }
 
+  /* Criar nova caixa */
   function handleNewBox() {
+    setSelectedBoxIndex(null);
     setBoxName("");
-    setLocked(false);
     setItems([]);
+    setLocked(false);
   }
 
+
+  /* Carregar caixa existente */
+  function loadBox(index: number) {
+    const box = boxes[index];
+    setSelectedBoxIndex(index);
+    setBoxName(box.BoxCode);
+    setItems(box.Products.map(p => ({ code: p })));
+    setLocked(true);
+  }
+
+
+  /* Apagar caixa */
+  function deleteBox(index: number) {
+    const filtered = boxes.filter((_, i) => i !== index);
+    setBoxes(filtered);
+
+    if (selectedBoxIndex === index) {
+      setSelectedBoxIndex(null);
+      setBoxName("");
+      setItems([]);
+      setLocked(false);
+    }
+  }
+
+  /* Finalizar */
   function handleFinish() {
-    alert("Finalizar conferência — implementar backend.");
+    const exportData = { Email: "exemplo@empresa.com", Boxes: boxes };
+    console.log("EXPORTAR", exportData);
+    alert("Implementar backend.");
   }
 
   return (
@@ -127,12 +199,22 @@ export default function Home() {
       "
     >
       <Card className="w-full h-full rounded-xl shadow-sm border flex flex-col overflow-hidden">
-
         <CardContent className="flex flex-col gap-6 flex-1 overflow-auto p-6">
 
+          {/* LOGO NO TOPO */}
+          {/* <img src="/johnsonNjohnson.png" className="mx-auto mt-2" /> */}
+
+
+
+          {/* INPUT DA CAIXA */}
           <Input
             value={boxName}
-            onChange={(e) => !locked && setBoxName(e.target.value.toUpperCase())}
+            onChange={(e) => {
+              if (!locked) {
+                setSelectedBoxIndex(null); // impede highlight de outras caixas
+                setBoxName(e.target.value.toUpperCase());
+              }
+            }}
             onKeyDown={handleBoxInput}
             disabled={locked}
             placeholder="AGUARDANDO CAIXA..."
@@ -150,7 +232,46 @@ export default function Home() {
             autoFocus
           />
 
-          {/* HEADER LISTA */}
+          {/* BADGES */}
+          {boxes.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {boxes.map((b, idx) => (
+                <Badge
+                  key={idx}
+                  variant={"none"}
+                  onClick={() => loadBox(idx)}
+                  className={`
+                  flex items-center gap-1 cursor-pointer px-2 py-0.5 text-xs rounded-md
+                  ${selectedBoxIndex === idx
+                      ? "bg-amber-300 text-amber-600"
+                      : "bg-gray-200 text-gray-600"
+                    }
+                `}
+                >
+                  <Icon icon="solar:box-bold-duotone" width={14} />
+
+                  <span>{b.BoxCode}</span>
+
+
+
+                  <Button
+                    className="p-0 ml-1 h-auto bg-transparent hover:bg-transparent shadow-none border-none"
+                    variant="none"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteBox(idx);
+                    }}
+                  >
+                    <Icon icon="solar:close-circle-bold-duotone" width={14} />
+                  </Button>
+
+                </Badge>
+
+              ))}
+            </div>
+          )}
+
+          {/* TÍTULO */}
           <div className="flex items-center justify-between">
             <h2 className="text-gray-700 text-lg font-semibold tracking-wide">
               Itens dentro da caixa
@@ -163,7 +284,7 @@ export default function Home() {
 
           <Separator />
 
-          {/* LISTA */}
+          {/* LISTA DE ITENS */}
           <div className="flex flex-col gap-3 overflow-y-auto overscroll-contain overflow-x-hidden">
             {items.map((item, index) => (
               <div
@@ -174,7 +295,6 @@ export default function Home() {
                   ${item.flash ? "animate-flash" : ""}
                   ${item.removing ? "animate-remove" : ""}
                 `}
-
               >
                 <div className="flex items-center gap-3">
                   <Icon icon="solar:box-bold-duotone" className="text-amber-600" width={26} />
@@ -204,10 +324,16 @@ export default function Home() {
             <Button
               onClick={handleNewBox}
               className="
-                flex-1 max-h-4 bg-[#D82B14] font-medium py-4 
-                text-xs tracking-wide rounded-lg transition
-                flex items-center justify-center gap-2 w-full bg-[#D82B14] hover:bg-[#b82410] text-white font-semibold py-3.5 rounded-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed group
-              "
+              flex-1 max-h-4 bg-[#D82B14] text-white font-semibold 
+              py-3.5 text-xs tracking-wide rounded-lg 
+              flex items-center justify-center gap-2 w-full
+              hover:bg-[#b82410] 
+              transition-all duration-300
+              disabled:opacity-60 disabled:cursor-not-allowed 
+              group 
+              focus:outline-none focus:ring-0
+            "
+
             >
               <Icon icon="solar:add-circle-bold-duotone" width={18} />
               NOVA CAIXA
@@ -220,7 +346,10 @@ export default function Home() {
                 flex-1 max-h-4 bg-[#D82B14] font-medium py-4 
                 text-xs tracking-wide rounded-lg transition
                 disabled:opacity-40
-                flex items-center justify-center gap-2 w-full bg-[#D82B14] hover:bg-[#b82410] text-white font-semibold py-3.5 rounded-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed group"
+                flex items-center justify-center gap-2 w-full bg-[#D82B14] 
+                hover:bg-[#b82410] text-white font-semibold py-3.5 rounded-lg 
+                transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed group
+              "
             >
               <Icon icon="solar:check-circle-bold-duotone" width={18} />
               FINALIZAR
