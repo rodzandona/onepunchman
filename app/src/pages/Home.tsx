@@ -7,9 +7,18 @@ import { Icon } from "@iconify/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Box } from "@/types/box.type";
+import SendEmail from "@/components/SendEmail";
 
 export default function Home() {
-  const [boxes, setBoxes] = useState<Box[]>([]);
+  const [boxes, setBoxes] = useState<Box[]>(() => {
+    try {
+      const saved = localStorage.getItem("boxes");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [selectedBoxIndex, setSelectedBoxIndex] = useState<number | null>(null);
 
   const [boxName, setBoxName] = useState("");
@@ -21,24 +30,37 @@ export default function Home() {
 
   const barcodeRef = useRef<HTMLInputElement>(null);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   /* Mantém foco */
   useEffect(() => {
-    if (locked) barcodeRef.current?.focus();
-  }, [locked, items]);
+    if (locked && !isModalOpen) {
+      try {
+        barcodeRef.current?.focus();
+      } catch {
+        // evita crash em edge cases de foco
+      }
+    }
+  }, [locked, items, isModalOpen]);
 
   useEffect(() => {
     function keepFocus() {
-      if (locked && document.activeElement !== barcodeRef.current) {
-        barcodeRef.current?.focus();
+      if (!isModalOpen && locked && document.activeElement !== barcodeRef.current) {
+        try {
+          barcodeRef.current?.focus();
+        } catch {
+          // evita crash em edge cases de foco
+        }
       }
     }
+
     document.addEventListener("click", keepFocus);
     document.addEventListener("focusin", keepFocus);
     return () => {
       document.removeEventListener("click", keepFocus);
       document.removeEventListener("focusin", keepFocus);
     };
-  }, [locked]);
+  }, [locked, isModalOpen]);
 
   /* Calcula área sem footer */
   useEffect(() => {
@@ -58,14 +80,40 @@ export default function Home() {
     return () => window.removeEventListener("resize", updateFooterHeight);
   }, []);
 
+  /* Persistência no localStorage */
+  useEffect(() => {
+    localStorage.setItem("boxes", JSON.stringify(boxes));
+  }, [boxes]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("boxes");
+    if (saved) {
+      try {
+        const parsed: Box[] = JSON.parse(saved);
+        setBoxes(parsed);
+      } catch { }
+    }
+  }, []);
+
   /* Entrada da caixa (Enter) */
   function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Enter") return;
 
-    const name = boxName.trim();
+    const name = boxName.trim().toUpperCase();
     if (!name) return;
 
-    // Se ainda não existe a caixa, criar agora!
+    // Verifica duplicado
+    const exists = boxes.some(b => b.BoxCode === name);
+    if (exists) {
+      toast.warning("Esta caixa já existe!", {
+        description: name,
+        duration: 2000,
+        className: "text-gray-900",
+      });
+      return;
+    }
+
+    // Criar caixa nova
     if (selectedBoxIndex === null) {
       const newBox: Box = {
         BoxCode: name,
@@ -73,7 +121,7 @@ export default function Home() {
       };
 
       setBoxes(prev => [...prev, newBox]);
-      setSelectedBoxIndex(boxes.length); // seleciona a caixa recém criada
+      setSelectedBoxIndex(boxes.length);
     }
 
     setLocked(true);
@@ -137,7 +185,6 @@ export default function Home() {
     }, 500);
   }
 
-
   /* Remove item */
   function removeItem(code: string) {
     setItems(prev =>
@@ -159,7 +206,6 @@ export default function Home() {
     setLocked(false);
   }
 
-
   /* Carregar caixa existente */
   function loadBox(index: number) {
     const box = boxes[index];
@@ -168,7 +214,6 @@ export default function Home() {
     setItems(box.Products.map(p => ({ code: p })));
     setLocked(true);
   }
-
 
   /* Apagar caixa */
   function deleteBox(index: number) {
@@ -185,9 +230,7 @@ export default function Home() {
 
   /* Finalizar */
   function handleFinish() {
-    const exportData = { Email: "exemplo@empresa.com", Boxes: boxes };
-    console.log("EXPORTAR", exportData);
-    alert("Implementar backend.");
+    setIsModalOpen(true);
   }
 
   return (
@@ -203,8 +246,6 @@ export default function Home() {
 
           {/* LOGO NO TOPO */}
           {/* <img src="/johnsonNjohnson.png" className="mx-auto mt-2" /> */}
-
-
 
           {/* INPUT DA CAIXA */}
           <Input
@@ -251,8 +292,6 @@ export default function Home() {
                   <Icon icon="solar:box-bold-duotone" width={14} />
 
                   <span>{b.BoxCode}</span>
-
-
 
                   <Button
                     className="p-0 ml-1 h-auto bg-transparent hover:bg-transparent shadow-none border-none"
@@ -357,6 +396,12 @@ export default function Home() {
           </div>
         </CardFooter>
       </Card>
+
+      <SendEmail
+        isOpen={isModalOpen}
+        boxes={boxes}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

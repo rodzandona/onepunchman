@@ -7,46 +7,60 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { toast } from "sonner";
+
+import { Box } from '@/types/box.type';
+import { sendExcel } from "@/services/export.service";
 
 interface SendEmailProps {
-  boxes?: any[];
-  isOpen?: boolean;
-  onClose?: () => void;
-  onSend?: (payload: { email: string; boxes: any[] }) => void;
+  boxes: Box[];
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function SendEmail({ boxes = [], isOpen = false, onClose, onSend }: SendEmailProps) {
+export default function SendEmail({ boxes, isOpen, onClose }: SendEmailProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSend = async () => {
-    if (!email) {
-      alert('Por favor, insira um email válido.');
+    if (!email.trim()) {
+      toast.warning("Digite um e-mail válido.");
       return;
     }
+
     setLoading(true);
+
     try {
-      if (onSend) {
-        await onSend({ email, boxes });
-      }
+      await sendExcel({ email, boxes });
+
+      toast.success("Conferência enviada com sucesso!");
+      onClose(); // fecha o modal
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao enviar conferência.");
     } finally {
       setLoading(false);
     }
   };
 
-return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Icon icon="solar:mailbox-linear" width={22} height={22} className="text-[#D82B14]" />
-            Enviar
+            Enviar Conferência
           </DialogTitle>
           <DialogDescription>
-            Conferência para email
+            Informe o e-mail que receberá o arquivo Excel.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-3 mt-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-3">
@@ -66,7 +80,7 @@ return (
               </div>
             </div>
           </div>
-          
+
           <button
             className="w-full bg-[#D82B14] hover:bg-[#b82410] text-white font-semibold py-3.5 rounded-lg transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed group"
             onClick={handleSend}
@@ -80,15 +94,20 @@ return (
             ) : (
               <div className="flex items-center justify-center gap-3">
                 Enviar Agora
-                <Icon icon="solar:arrow-right-linear" width={18} height={18} className="group-hover:translate-x-1 transition-transform" />
+                <Icon
+                  icon="solar:arrow-right-linear"
+                  width={18}
+                  height={18}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </div>
             )}
           </button>
         </div>
-        
+
         <div className="px-6 py-4 bg-gray-100/75 -mx-6 -mb-6 mt-6 border-t border-gray-100 rounded-b-2xl">
           <p className="text-xs text-gray-500 text-center">
-            A conferência será enviada como anexo em formato Excel
+            A conferência será enviada em formato Excel para o e-mail informado.
           </p>
         </div>
       </DialogContent>
