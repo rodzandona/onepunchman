@@ -6,10 +6,11 @@ import BoxBadges from "@/components/box/BoxBadges";
 import BoxItemList from "@/components/box/BoxItemList";
 import BoxFooterActions from "@/components/box/BoxFooterActions";
 
-import { useBoxLogic } from "@/hooks/box/useBoxLogic";
+import { useBoxLogic } from "@/hooks/useBoxLogic";
 import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import Barcode from "@/components/Barcode";
+import { useBarcodeLogic } from "@/hooks/barcode/useBarcodeLogic";
 
 export default function Home() {
 
@@ -35,22 +36,39 @@ export default function Home() {
 
   const logic = useBoxLogic();
 
+  // scanner global agora só funciona se locked = true
+  const barcode = useBarcodeLogic(
+    (code) => logic.addBarcode(code),
+    logic.locked && !logic.isModalOpen,
+    { current: document.getElementById("box-input") as HTMLInputElement }
+  );
+
+
+
   return (
     <div className="w-full flex justify-center p-5 h-[calc(100dvh-var(--footer-height))]">
       <Card className="w-full rounded-xl shadow-sm border flex flex-col overflow-hidden">
+        <div className="flex items-center justify-center pt-6">
+          <img
+            src="johnsonNjohnson.png"
+            alt="imagem"
+            className="w-36"
+          />
+        </div>
         <CardContent className="flex flex-col gap-6 flex-1 overflow-auto p-6">
 
-          <BoxInput
+          <BoxInput 
             value={logic.boxName}
-            disabled={logic.locked}
-            onChange={(e) => logic.setBoxName(e.target.value.toUpperCase())}
+            onChange={(e) => !logic.locked && logic.setBoxName(e.target.value.toUpperCase())}
             onKeyDown={logic.handleBoxInput}
+            disabled={logic.locked}
           />
 
           <Barcode
-            ref={logic.barcodeRef}
-            onKeyDown={logic.handleAutomaticScan}
+            ref={barcode.barcodeRef}
+            onKeyDown={barcode.handleAutomaticScan}
           />
+
 
           <BoxBadges
             boxes={logic.boxes}

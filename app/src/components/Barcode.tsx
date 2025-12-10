@@ -17,4 +17,5 @@ const Barcode = forwardRef<HTMLInputElement, BarcodeProps>(({ onKeyDown }, ref) 
 });
 
 Barcode.displayName = "Barcode";
+
 export default Barcode;

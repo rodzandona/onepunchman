@@ -22,17 +22,16 @@ export function useBoxLogic() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  /** ESTE REF SERÁ PASSADO PARA <Barcode /> */
   const barcodeRef = useRef<HTMLInputElement>(null);
 
-  /** Mantém foco quando permitido */
+  /** Foco automático somente quando pode escanear */
   useEffect(() => {
     if (locked && !isModalOpen) {
       barcodeRef.current?.focus?.();
     }
   }, [locked, items, isModalOpen]);
 
-  /** Força foco contínuo no input invisível */
+  /** Mantém foco no scanner sempre que necessário */
   useEffect(() => {
     function keepFocus() {
       if (!isModalOpen && locked && document.activeElement !== barcodeRef.current) {
@@ -49,12 +48,12 @@ export function useBoxLogic() {
     };
   }, [locked, isModalOpen]);
 
-  /** Persistir no localStorage */
+  /** Salva caixas no localStorage */
   useEffect(() => {
     localStorage.setItem("boxes", JSON.stringify(boxes));
   }, [boxes]);
 
-  /** Criar caixa */
+  /** Criar nova caixa */
   function createBox() {
     const name = boxName.trim().toUpperCase();
     if (!name) return;
@@ -66,10 +65,9 @@ export function useBoxLogic() {
     }
 
     const newBox: Box = { BoxCode: name, Products: [] };
-    setBoxes(prev => [...prev, newBox]);
 
-    const index = boxes.length;
-    setSelectedBoxIndex(index);
+    setBoxes(prev => [...prev, newBox]);
+    setSelectedBoxIndex(boxes.length);
     setLocked(true);
 
     setTimeout(() => barcodeRef.current?.focus?.(), 50);
@@ -77,12 +75,10 @@ export function useBoxLogic() {
 
   /** Enter no input da caixa */
   function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      createBox();
-    }
+    if (e.key === "Enter") createBox();
   }
 
-  /** Sincronizar itens da caixa ativa */
+  /** Sincronizar alterações dos produtos */
   function syncSelectedBox(updatedProducts: string[]) {
     if (selectedBoxIndex === null) return;
 
@@ -93,20 +89,10 @@ export function useBoxLogic() {
     });
   }
 
-  /** Scanner invisível (<Barcode /> chama isto) */
-  function handleAutomaticScan(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!locked) return;
-    if (e.key !== "Enter") return;
-
-    const code = e.currentTarget.value.trim();
-    e.currentTarget.value = "";
-
-    if (code) addBarcode(code);
-  }
-
-  /** Adicionar item */
+  /** Adicionar item via scanner */
   function addBarcode(code: string) {
     const exists = items.some(i => i.code === code);
+
     if (exists) {
       toast.warning("Item já existe!", { description: code });
       return;
@@ -114,14 +100,13 @@ export function useBoxLogic() {
 
     const updated = [...items, { code, flash: true }];
     setItems(updated);
-
-    if (selectedBoxIndex !== null) {
-      syncSelectedBox(updated.map(i => i.code));
-    }
+    syncSelectedBox(updated.map(i => i.code));
 
     setTimeout(() => {
       setItems(prev =>
-        prev.map(i => (i.code === code ? { ...i, flash: false } : i))
+        prev.map(i =>
+          i.code === code ? { ...i, flash: false } : i
+        )
       );
     }, 400);
   }
@@ -129,7 +114,9 @@ export function useBoxLogic() {
   /** Remover item */
   function removeItem(code: string) {
     setItems(prev =>
-      prev.map(i => (i.code === code ? { ...i, removing: true } : i))
+      prev.map(i =>
+        i.code === code ? { ...i, removing: true } : i
+      )
     );
 
     setTimeout(() => {
@@ -139,7 +126,7 @@ export function useBoxLogic() {
     }, 300);
   }
 
-  /** Nova caixa */
+  /** Reset para criar nova caixa */
   function newBox() {
     setSelectedBoxIndex(null);
     setBoxName("");
@@ -156,16 +143,15 @@ export function useBoxLogic() {
     setLocked(true);
   }
 
-  /** Apagar caixa */
+  /** Remover caixa */
   function deleteBox(index: number) {
-    setBoxes(prev => prev.filter((_, i) => i !== index));
+    const filtered = boxes.filter((_, i) => i !== index);
+    setBoxes(filtered);
 
-    if (selectedBoxIndex === index) {
-      newBox();
-    }
+    if (selectedBoxIndex === index) newBox();
   }
 
-  /** Finalizar */
+  /** Abrir modal de envio */
   function finish() {
     setIsModalOpen(true);
   }
@@ -177,21 +163,18 @@ export function useBoxLogic() {
     setBoxName,
     selectedBoxIndex,
     locked,
-    isModalOpen,
 
-    /** EXPOSTOS PARA <Barcode /> */
     barcodeRef,
-    handleAutomaticScan,
+    isModalOpen,
+    setIsModalOpen,
 
-    /** Eventos */
     handleBoxInput,
     addBarcode,
     removeItem,
+
     newBox,
     loadBox,
     deleteBox,
     finish,
-
-    setIsModalOpen,
   };
 }

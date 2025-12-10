@@ -34,6 +34,7 @@ export default function SendEmail({ boxes, isOpen, onClose }: SendEmailProps) {
       await sendExcel({ email, boxes });
 
       toast.success("Conferência enviada com sucesso!");
+      localStorage.deleteItem("boxes");
       onClose(); // fecha o modal
     } catch (err) {
       console.error(err);
@@ -50,7 +51,7 @@ export default function SendEmail({ boxes, isOpen, onClose }: SendEmailProps) {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[90%]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Icon icon="solar:mailbox-linear" width={22} height={22} className="text-[#D82B14]" />

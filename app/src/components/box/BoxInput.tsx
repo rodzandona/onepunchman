@@ -11,6 +11,7 @@ interface BoxInputProps {
 export default function BoxInput({ value, disabled, onChange, onKeyDown }: BoxInputProps) {
   return (
     <Input
+      id="box-input"
       value={value}
       disabled={disabled}
       onChange={onChange}
@@ -24,3 +25,8 @@ export default function BoxInput({ value, disabled, onChange, onKeyDown }: BoxIn
     />
   );
 }
+
+
+<Input
+
+/>
