@@ -7,7 +7,7 @@ interface MenuBarProps {
 
 export default function MenuBar({ activeTab, onTabChange }: MenuBarProps) {
   const baseButtonClasses = `
-    flex-1 flex flex-col items-center py-3 px-1 rounded-xl transition-colors duration-300 text-sm font-medium
+    flex-1 flex flex-col items-center py-3 px-1 rounded-xl transition-all duration-300 text-sm font-medium
   `;
 
   return (
@@ -22,35 +22,35 @@ export default function MenuBar({ activeTab, onTabChange }: MenuBarProps) {
         >
           <button
             onClick={() => onTabChange('home')}
-            className={`${baseButtonClasses} ${
+            className={`${baseButtonClasses} transition-all duration-300 will-change-transform ${
               activeTab === 'home'
-                  ? 'bg-white text-[#D82B14] shadow-[1px_1px_1px_rgba(0,0,0,0.10)] transform -translate-y-0.5 border-1 border-[#D82B14]'
-                : 'text-gray-500 hover:bg-white/80 hover:text-gray-700 hover:shadow-sm border border-gray-200'
+                  ? 'bg-white text-[#D82B14] shadow-[1px_1px_1px_rgba(0,0,0,0.10)] -translate-y-1 border-1 border-[#D82B14]'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:shadow-sm border border-gray-200 translate-y-0'
             } sm:py-2 sm:px-0`}
           >
             <Icon
               icon="solar:home-angle-linear"
               className={`w-6 h-6 mb-1 transition-all duration-300 ${
-                activeTab === 'home' ? 'text-[#D82B14] scale-110' : 'text-gray-400'
+                activeTab === 'home' ? 'text-[#D82B14] scale-110' : 'text-gray-400 scale-100'
               }`}
             />
-            <span className={`text-xs font-semibold ${activeTab === 'home' ? 'text-[#D82B14]' : ''}`}>Início</span>
+            <span className={`text-xs font-semibold transition-all duration-300 ${activeTab === 'home' ? 'text-[#D82B14]' : ''}`}>Início</span>
           </button>
           <button
             onClick={() => onTabChange('settings')}
-            className={`${baseButtonClasses} ${
+            className={`${baseButtonClasses} transition-all duration-300 will-change-transform ${
               activeTab === 'settings'
-                  ? 'bg-white text-[#D82B14] shadow-[0_4px_12px_rgba(0,0,0,0.08)] transform -translate-y-0.5 border-1 border-[#D82B14]'
-                : 'text-gray-500 hover:bg-white/80 hover:text-gray-700 hover:shadow-sm border border-gray-200'
+                  ? 'bg-white text-[#D82B14] shadow-[0_4px_12px_rgba(0,0,0,0.08)] -translate-y-1 border-1 border-[#D82B14]'
+                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700 hover:shadow-sm border border-gray-200 translate-y-0'
             } sm:py-2 sm:px-0`}
           >
             <Icon
               icon="solar:settings-linear"
               className={`w-6 h-6 mb-1 transition-all duration-300 ${
-                activeTab === 'settings' ? 'text-[#D82B14] scale-110' : 'text-gray-400'
+                activeTab === 'settings' ? 'text-[#D82B14] scale-110' : 'text-gray-400 scale-100'
               }`}
             />
-            <span className={`text-xs font-semibold ${activeTab === 'settings' ? 'text-[#D82B14]' : ''}`}>Config</span>
+            <span className={`text-xs font-semibold transition-all duration-300 ${activeTab === 'settings' ? 'text-[#D82B14]' : ''}`}>Config</span>
           </button>
         </div>
       </div>
