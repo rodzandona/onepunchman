@@ -2,6 +2,7 @@ import { useState } from 'react'
 import MenuBar from './components/MenuBar'
 import Home from './pages/Home'
 import Settings from './pages/Settings'
+import { Toaster, toast } from "sonner";
 
 
 
@@ -17,6 +18,7 @@ function App() {
       
       {/* MenuBar fixo na parte inferior */}
       <MenuBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Toaster richColors />
     </div>
   )
 }
