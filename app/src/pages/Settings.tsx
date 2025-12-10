@@ -46,10 +46,19 @@ export default function Settings() {
         <div className="w-full h-px bg-gray-500 mb-4"></div>
 
         <Card className="w-full rounded-lg shadow-lg">
-          <div className="justify-end p-2 font-semibold">
-            <div className="bg-gray-200 rounded-lg p-2">Versão do App </div>
-            <div className="p-2">Versão de Compilação</div>
+          <div className="p-2 font-semibold">
+            {/* Versão do App */}
+            <div className="bg-gray-200 rounded-lg p-2 flex justify-between items-center">
+              <span>Versão do App</span>
+              <span>1.0.0</span>
+            </div>
+            {/* Versão de Compilação */}
+            <div className="p-2 flex justify-between items-center">
+              <span>Versão de Compilação</span>
+              <span>1.0.0</span>
+            </div>
           </div>
+
         </Card>
 
       </div>
