@@ -14,7 +14,7 @@ export default function BoxFooterActions({ locked, onNew, onFinish }: BoxFooterA
       <Button
         onClick={onNew}
         className="
-          flex-1 max-h-12 bg-[#D82B14] text-white font-semibold 
+          flex-1 max-h-8 bg-[#D82B14] text-white font-semibold 
           py-4 text-xs tracking-wide rounded-lg 
           flex items-center justify-center gap-2 w-full
           hover:bg-[#b82410]
@@ -28,9 +28,9 @@ export default function BoxFooterActions({ locked, onNew, onFinish }: BoxFooterA
         onClick={onFinish}
         disabled={!locked}
         className="
-          flex-1 max-h-4 bg-[#D82B14] text-white font-semibold 
-          py-4 text-xs rounded-lg 
-          flex items-center justify-center gap-2
+          flex-1 max-h-8 bg-[#D82B14] text-white font-semibold 
+          py-4 text-xs tracking-wide rounded-lg 
+          flex items-center justify-center gap-2 w-full
         "
       >
         <Icon icon="solar:check-circle-bold-duotone" width={18} />
