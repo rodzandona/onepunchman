@@ -20,7 +20,7 @@ export default function BoxFooterActions({ locked, onNew, onFinish }: BoxFooterA
           hover:bg-[#b82410]
         "
       >
-        <Icon icon="solar:add-circle-bold-duotone" width={18} />
+        {/* <Icon icon="solar:add-circle-bold-duotone" width={18} /> */}
         NOVA CAIXA
       </Button>
 
@@ -33,7 +33,7 @@ export default function BoxFooterActions({ locked, onNew, onFinish }: BoxFooterA
           flex items-center justify-center gap-2 w-full
         "
       >
-        <Icon icon="solar:check-circle-bold-duotone" width={18} />
+        {/* <Icon icon="solar:check-circle-bold-duotone" width={18} /> */}
         FINALIZAR
       </Button>
     </div>
