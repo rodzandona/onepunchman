@@ -13,15 +13,21 @@ export default function Settings() {
   return (
     <div className="font-thin p-[6px]">
 
-      <div className="bg-gray-100 w-full p-5 shadow ">
-        <div className="flex justify-start gap-10">
-          <Icon icon="solar:arrow-left-linear" className=" mt-1 h-8 w-8 text-center hover:bg-gray-300 hover:rounded-full" />
-          <div className="flex gap-2">
-            <Icon icon="solar:settings-line-duotone" className="h-7 w-7 text-gray-500 mt-1" />
-            <h1 className="text-2xl  font-bold text-gray-800">Configurações</h1>
-          </div>
-        </div>
-      </div>
+     <div className="bg-white border-b px-4 py-3">
+  <div className="flex items-center gap-3">
+    <button 
+
+      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <Icon icon="solar:arrow-left-linear" className="w-6 h-6 text-gray-700" />
+    </button>
+    
+    <div className="flex items-center gap-2">
+      <Icon icon="solar:settings-bold-duotone" className="w-6 h-6 text-[#D82B14]" />
+      <h1 className="text-lg font-semibold text-gray-800">Configurações</h1>
+    </div>
+  </div>
+</div>
 
       <div className="p-[6px]">
         <div className="flex justify-center text-center">
