@@ -1,29 +1,24 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using API.Models;
+﻿using API.Models;
 using API.Services;
+using Microsoft.AspNetCore.Mvc;
 
-namespace API.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly AuthService _authService;
+
+    public AuthController(AuthService authService)
     {
-        private readonly AuthService _authService;
+        _authService = authService;
+    }
 
-        public AuthController(AuthService authService)
-        {
-            _authService = authService;
-        }
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
 
-        [HttpPost("login")]
-        public ActionResult<LoginResponse> Login([FromBody] LoginRequest request)
-        {
-            var response = _authService.Authenticate(request);
-
-            if (!response.Success)
-                return Unauthorized(response);
-
-            return Ok(response);
-        }
+        return Ok(await _authService.Authenticate(request));       
     }
 }

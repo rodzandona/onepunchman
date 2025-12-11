@@ -1,38 +1,65 @@
-﻿using API.Models;
+﻿using api.Data;
+using API.Models;
+using API.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
     public class AuthService
     {
-        // Simulação - depois conecta no SQL Server via EF Core
-        private readonly List<User> _users = new()
+        private readonly DataBaseContext _context;
+        private readonly TokenService _tokenService;
+
+        public AuthService(DataBaseContext context, TokenService tokenService)
         {
-            new User { Id = 1, Username = "admin_syspack", PasswordHash = "p@ssw0rd013459", Email = "admin@jj.com" }
-        };
+            _context = context;
+            _tokenService = tokenService;
+        }
 
-        public LoginResponse Authenticate(LoginRequest request)
+        public async Task<LoginResponse> Authenticate(LoginRequest request)
         {
-            var user = _users.FirstOrDefault(u => u.Username == request.Username);
+            //Console.WriteLine(PasswordHasher.Hash("123456"));
 
-            Console.WriteLine("User: " + user);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == request.Username);
 
-            if (user == null || user.PasswordHash != request.Password)
+            if (user == null)
             {
                 return new LoginResponse
                 {
                     Success = false,
-                    Message = "Usuário ou senha inválidos"
+                    Message = "Usuário ou senha inválidos",
+                    Data = null
                 };
             }
 
-            // Aqui você vai gerar um JWT real depois
-            var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            // Verificar Hash
+            if (!PasswordHasher.Verify(request.Password, user.PasswordHash))
+            {
+                return new LoginResponse
+                {
+                    Success = false,
+                    Message = "Usuário ou senha inválidos",
+                    Data = null
+                };
+            }
+
+            // Gerar JWT real
+            var token = _tokenService.GenerateToken(user.Username);
+
+            var userResponse = new UserResponseDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Token = token
+            };
 
             return new LoginResponse
             {
                 Success = true,
-                Token = token,
-                Message = "Login realizado com sucesso"
+                Message = "Login realizado com sucesso",
+                Data = userResponse
             };
         }
     }

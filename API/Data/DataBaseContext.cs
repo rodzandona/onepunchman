@@ -13,8 +13,6 @@ namespace api.Data
         {
         }
 
-        //Inserir Todos os Models
-        public DbSet<LoginRequest> Login { get; set; }
         public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
