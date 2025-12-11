@@ -48,10 +48,10 @@ export function useBoxLogic() {
     };
   }, [locked, isModalOpen]);
 
-  /** Salva caixas no localStorage */
-  useEffect(() => {
-    localStorage.setItem("boxes", JSON.stringify(boxes));
-  }, [boxes]);
+  // /** Salva caixas no localStorage */
+  // useEffect(() => {
+  //   localStorage.setItem("boxes", JSON.stringify(boxes));
+  // }, [boxes]);
 
   /** Criar nova caixa */
   function createBox() {

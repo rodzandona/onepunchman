@@ -1,16 +1,19 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import SendEmail from "@/components/SendEmail";
+import SendEmail from "@/components/home/SendEmail";
 
 import BoxInput from "@/components/box/BoxInput";
 import BoxBadges from "@/components/box/BoxBadges";
 import BoxItemList from "@/components/box/BoxItemList";
 import BoxFooterActions from "@/components/box/BoxFooterActions";
 
-import { useBoxLogic } from "@/hooks/useBoxLogic";
+import { useBoxLogic } from "@/hooks/box/useBoxLogic";
 import { useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import Barcode from "@/components/Barcode";
+import Barcode from "@/components/home/Barcode";
 import { useBarcodeLogic } from "@/hooks/barcode/useBarcodeLogic";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import BoxQuantityItems from "@/components/box/BoxQuantityItems";
+import HeaderTitle from "@/components/home/HeaderTitle";
 
 export default function Home() {
 
@@ -48,16 +51,12 @@ export default function Home() {
   return (
     <div className="w-full flex justify-center p-5 h-[calc(100dvh-var(--footer-height))]">
       <Card className="w-full rounded-xl shadow-sm border flex flex-col overflow-hidden">
-        <div className="flex items-center justify-center pt-6">
-          <img
-            src="johnsonNjohnson.png"
-            alt="imagem"
-            className="w-36"
-          />
-        </div>
+
+       <HeaderTitle/>
+
         <CardContent className="flex flex-col gap-6 flex-1 overflow-auto p-6">
 
-          <BoxInput 
+          <BoxInput
             value={logic.boxName}
             onChange={(e) => !logic.locked && logic.setBoxName(e.target.value.toUpperCase())}
             onKeyDown={logic.handleBoxInput}
@@ -70,13 +69,18 @@ export default function Home() {
           />
 
 
-          <BoxBadges
+          {/* <BoxBadges
             boxes={logic.boxes}
             selected={logic.selectedBoxIndex}
             onSelect={logic.loadBox}
             onDelete={logic.deleteBox}
-          />
+          /> */}
 
+        
+          <BoxQuantityItems items={logic.items}/>
+
+          <Separator />
+          
           <BoxItemList
             items={logic.items}
             removeItem={logic.removeItem}
