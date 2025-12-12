@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Text;
 using System.Text.Json.Serialization;
 
+
 internal class Program 
 {
     private static void Main(string[] args)
@@ -71,25 +72,43 @@ internal class Program
             {
                 throw new ArgumentNullException("JwtKey", "JwtKey está faltando ou nula nas configurações.");
             }
+
             var key = Encoding.ASCII.GetBytes(jwtKey);
 
-            builder.Services.
-                AddAuthentication(x =>
+            builder.Services
+                .AddAuthentication(options =>
                 {
-                    x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                }).
-                AddJwtBearer(x =>
+                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                })
+                .AddJwtBearer(options =>
                 {
-                    x.TokenValidationParameters = new TokenValidationParameters
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(key),
-                        ValidateIssuer = false,
-                        ValidateAudience = false,
+
+                        ValidIssuer = "api.onepunchman",
+                        ValidAudience = "onepunchman-client",
+
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"]!)
+                        ),
+
+                        ClockSkew = TimeSpan.Zero
                     };
                 });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
         }
+
 
         void ConfigureMvc(WebApplicationBuilder builder)
         {
