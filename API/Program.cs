@@ -1,6 +1,8 @@
 using api.Data;
 using API;
 using API.Models;
+using API.Repositories.Implementations;
+using API.Repositories.Interfaces;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -173,6 +175,8 @@ internal class Program
                     Version = "v1"
                 });
             });
+
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             builder.Services.AddScoped<AuthService>();
             builder.Services.AddTransient<ExcelService>();
