@@ -14,11 +14,22 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<IActionResult> Login(LoginRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        var user = await _authService.Authenticate(request);
 
-        return Ok(await _authService.Authenticate(request));       
+        if (user == null)
+        {
+            return BadRequest(
+                ApiResponse<object>.Fail("Usuário ou senha inválidos")
+            );
+        }
+
+        return Ok(
+            ApiResponse<UserResponseDto>.Ok(
+                user,
+                "Login realizado com sucesso"
+            )
+        );
     }
 }
