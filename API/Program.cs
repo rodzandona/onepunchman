@@ -1,7 +1,9 @@
 using api.Data;
 using API;
+using API.Models;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -104,11 +106,27 @@ internal class Program
                 .AddJsonOptions(x =>
                 {
                     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                    x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+                    x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
                 })
                 .ConfigureApiBehaviorOptions(options =>
                 {
-                    options.SuppressModelStateInvalidFilter = true;
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        var errors = context.ModelState
+                            .Where(x => x.Value?.Errors.Count > 0)
+                            .ToDictionary(
+                                x => x.Key,
+                                x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                            );
+
+                        var response = ApiResponse<object>.Fail(
+                            "Erro de validação.",
+                            errors
+                        );
+
+                        return new BadRequestObjectResult(response);
+                    };
                 });
         }
 
