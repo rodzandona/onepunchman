@@ -20,9 +20,9 @@ export default function Login() {
                     <h3 className="text-center text-gray-700 font-medium text-xl mb-10 ">Preencha seus dados para continuar</h3>
 
                     <div className="mb-10">
-                        <div className="text-2xl mb-3 font-medium">E-mail</div>
+                        <div className="text-2xl mb-3 font-medium">Usuário</div>
                         <Input
-                            placeholder="Insira seu e-mail"
+                            placeholder="Insira seu usuário"
                             className="border-gray-500/50 h-[3.5rem]"
                         />
                     </div>
@@ -42,7 +42,7 @@ export default function Login() {
             </main>
             <footer className="bg-red-700 w-full h-[5rem] mt-auto flex justify-center items-center">
                 <div className="flex justify-center items-center gap-2 mt-6">
-                    
+                    <h2 className="text-white text-center text-sm mb-5">Versão 12.12.2025</h2>
                 </div>
             </footer>
 
