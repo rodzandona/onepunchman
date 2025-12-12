@@ -3,6 +3,7 @@ import MenuBar from './components/MenuBar'
 import Home from './pages/Home'
 import Settings from './pages/Settings'
 import { Toaster, toast } from "sonner";
+import Login from './pages/Login';
 
 
 
@@ -10,17 +11,19 @@ function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'settings'>('home')
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      {/* Conteúdo principal */}
-      <main className="flex-1 overflow-y-auto pb-28">
-        {activeTab === 'home' ? <Home /> : <Settings />}
-      </main>
+  //   <div className="h-screen flex flex-col bg-gray-50">
+  //     {/* Conteúdo principal */}
+  //     <main className="flex-1 overflow-y-auto pb-28">
+  //       {activeTab === 'home' ? <Home /> : <Settings />}
+  //     </main>
       
-      {/* MenuBar fixo na parte inferior */}
-      <MenuBar activeTab={activeTab} onTabChange={setActiveTab} />
-      <Toaster richColors />
-    </div>
+  //     {/* MenuBar fixo na parte inferior */}
+  //     <MenuBar activeTab={activeTab} onTabChange={setActiveTab} />
+  //     <Toaster richColors />
+  //   </div>
+  <Login/>
   )
+  
 }
 
 export default App
