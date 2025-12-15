@@ -1,24 +1,25 @@
-﻿using api.Data;
-using API.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using API.Models;
+using API.Repositories.Interfaces;
 
 namespace API.Services
 {
     public class AuthService
     {
-        private readonly DataBaseContext _context;
+        private readonly IUserRepository _userRepository;
         private readonly TokenService _tokenService;
 
-        public AuthService(DataBaseContext context, TokenService tokenService)
+        public AuthService(
+            IUserRepository userRepository,
+            TokenService tokenService)
         {
-            _context = context;
+            _userRepository = userRepository;
             _tokenService = tokenService;
         }
 
         public async Task<UserResponseDto?> Authenticate(LoginRequest request)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == request.Username);
+            var user = await _userRepository
+                .GetByUsernameAsync(request.Username);
 
             if (user == null)
                 return null;

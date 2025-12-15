@@ -11,26 +11,36 @@ namespace API.Services
 
         public TokenService(IConfiguration configuration)
         {
-            _jwtKey = configuration["JwtKey"] ?? throw new ArgumentNullException("JwtKey");
+            _jwtKey = configuration["JwtKey"]
+                ?? throw new ArgumentNullException(nameof(_jwtKey));
         }
 
         public string GenerateToken(string username)
         {
-            var key = Encoding.ASCII.GetBytes(_jwtKey);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
+            var credentials = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256
+            );
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var claims = new[]
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, username)
-                }),
-                Expires = DateTime.UtcNow.AddHours(2),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                new Claim(JwtRegisteredClaimNames.Sub, username),
+                new Claim(JwtRegisteredClaimNames.UniqueName, username),
+                new Claim(JwtRegisteredClaimNames.Iat,
+                    DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
+                    ClaimValueTypes.Integer64)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var token = new JwtSecurityToken(
+                issuer: "api.onepunchman",
+                audience: "onepunchman-client",
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(72),
+                signingCredentials: credentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

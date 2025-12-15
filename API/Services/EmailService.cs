@@ -21,6 +21,13 @@ namespace API.Services
             var smtpPass = _config["Smtp:Pass"];
             var fromEmail = _config["Smtp:From"];
 
+            // Console.WriteLine($"SMTP Host: {_config["Smtp:Host"]}");
+            // Console.WriteLine($"SMTP Port: {_config["Smtp:Port"]}");
+            // Console.WriteLine($"SMTP User: {_config["Smtp:User"]}");
+            // Console.WriteLine($"SMTP From: {_config["Smtp:From"]}");
+            // Console.WriteLine($"SMTP Pass is null? {_config["Smtp:Pass"] == null}");
+
+
             using var client = new SmtpClient(smtpHost, smtpPort)
             {
                 UseDefaultCredentials = false,
