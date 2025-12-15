@@ -1,6 +1,5 @@
 using api.Data;
 using API;
-using API.Models;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services;
@@ -9,188 +8,176 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using System.Text;
 using System.Text.Json.Serialization;
 
+var builder = WebApplication.CreateBuilder(args);
 
-internal class Program 
-{
-    private static void Main(string[] args)
+/* =======================
+   CONFIGURAÇÕES
+   ======================= */
+
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+/* =======================
+   AUTENTICAÇÃO / AUTORIZAÇÃO
+   ======================= */
+
+var jwtKey = builder.Configuration["JwtKey"]
+    ?? throw new ArgumentNullException("JwtKey", "JwtKey está faltando nas configurações.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        var builder = WebApplication.CreateBuilder(args);
-
-        StartAPI(builder);
-
-        void StartAPI(WebApplicationBuilder builder)
+        options.TokenValidationParameters = new TokenValidationParameters
         {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
-            builder.Configuration
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            //.AddJsonFile("appsettings.PD.json", optional: true)
-            .AddEnvironmentVariables();
+            ValidIssuer = "api.onepunchman",
+            ValidAudience = "onepunchman-client",
 
-            ConfigureAuthentication(builder);
-            ConfigureMvc(builder);
-            ConfigureServices(builder);
-            Configuration(builder);
-        }
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)
+            ),
 
-        void Configuration(WebApplicationBuilder builder)
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
-        {           
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
-            var app = builder.Build();
+/* =======================
+   MVC / JSON / CORS
+   ======================= */
 
-            string prod = "/onepunchman.api";
-            if (app.Environment.IsDevelopment())
-            {
-                prod = "";
-            }
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapControllers();
-
-            app.UseSwagger();
-            app.UseSwaggerUI(options =>
-            {
-                options.RoutePrefix = "swagger";
-                options.SwaggerEndpoint($"{prod}/swagger/api/swagger.json", "Documento - API Yard Management");
-            });
-
-            app.UseCors("CorsPolicy");
-            app.Run();
-        }
-
-        void ConfigureAuthentication(WebApplicationBuilder builder)
+builder.Services
+    .AddCors(options =>
+    {
+        options.AddPolicy("CorsPolicy", policy =>
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+    })
+    .AddMemoryCache()
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
         {
-            var configuration = builder.Configuration;
+            var errors = context.ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    x => x.Key,
+                    x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                );
 
-            var jwtKey = configuration["JwtKey"];
-            if (string.IsNullOrEmpty(jwtKey))
-            {
-                throw new ArgumentNullException("JwtKey", "JwtKey está faltando ou nula nas configurações.");
-            }
+            return new BadRequestObjectResult(
+                ApiResponse<object>.Fail("Erro de validação.", errors)
+            );
+        };
+    });
 
-            var key = Encoding.ASCII.GetBytes(jwtKey);
+/* =======================
+   BANCO DE DADOS
+   ======================= */
 
-            builder.Services
-                .AddAuthentication(options =>
-                {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
+builder.Services.AddDbContext<DataBaseContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
 
-                        ValidIssuer = "api.onepunchman",
-                        ValidAudience = "onepunchman-client",
+/* =======================
+   DEPENDENCY INJECTION
+   ======================= */
 
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"]!)
-                        ),
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddTransient<TokenService>();
+builder.Services.AddTransient<ExcelService>();
+builder.Services.AddTransient<EmailService>();
 
-                        ClockSkew = TimeSpan.Zero
-                    };
-                });
+/* =======================
+   SWAGGER (JWT INTEGRADO)
+   ======================= */
 
-            builder.Services.AddAuthorization(options =>
-            {
-                options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            });
-        }
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("api", new OpenApiInfo
+    {
+        Title = "API - OnePunchMan Management",
+        Description = "Documento da API - OnePunchMan Management",
+        Version = "v1"
+    });
 
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Informe o token JWT no formato: Bearer {seu_token}"
+    });
 
-        void ConfigureMvc(WebApplicationBuilder builder)
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
         {
-            builder.Services
-                .AddCors(options =>
-                {
-                    options.AddPolicy("CorsPolicy", builder => builder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
-                })
-                .AddMemoryCache()
-                .AddControllers()
-                .AddJsonOptions(x =>
-                {
-                    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-                    x.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-
-                })
-                .ConfigureApiBehaviorOptions(options =>
-                {
-                    options.InvalidModelStateResponseFactory = context =>
-                    {
-                        var errors = context.ModelState
-                            .Where(x => x.Value?.Errors.Count > 0)
-                            .ToDictionary(
-                                x => x.Key,
-                                x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
-                            );
-
-                        var response = ApiResponse<object>.Fail(
-                            "Erro de validação.",
-                            errors
-                        );
-
-                        return new BadRequestObjectResult(response);
-                    };
-                });
-        }
-
-        void ConfigureServices(WebApplicationBuilder builder)
-        {
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-            builder.Services.AddDbContext<DataBaseContext>(options =>
-                options.UseSqlServer(connectionString));
-
-            builder.Services.AddTransient<TokenService>();
-
-            builder.Services.AddMvc().AddNewtonsoftJson(options =>
+            new OpenApiSecurityScheme
             {
-                options.SerializerSettings.NullValueHandling = NullValueHandling.Include;
-                options.SerializerSettings.DefaultValueHandling = DefaultValueHandling.Include;
-            });
-
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("api", new OpenApiInfo
+                Reference = new OpenApiReference
                 {
-                    Title = "API - OnePunchMan Management",
-                    Description = "Documento da API - OnePunchMan Management",
-                    Version = "v1"
-                });
-            });
-
-            builder.Services.AddScoped<IUserRepository, UserRepository>();
-
-            builder.Services.AddScoped<AuthService>();
-            builder.Services.AddTransient<ExcelService>();
-            builder.Services.AddTransient<EmailService>();
-
-
-
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
         }
+    });
+});
 
+/* =======================
+   BUILD & PIPELINE
+   ======================= */
 
-    }
+var app = builder.Build();
 
-}
+var basePath = app.Environment.IsDevelopment()
+    ? string.Empty
+    : "/onepunchman.api";
 
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.RoutePrefix = "swagger";
+    options.SwaggerEndpoint(
+        $"{basePath}/swagger/api/swagger.json",
+        "API OnePunchMan Management"
+    );
+});
 
+app.UseCors("CorsPolicy");
 
+app.UseAuthentication();
+app.UseAuthorization();
 
+app.MapControllers();
+
+app.Run();
