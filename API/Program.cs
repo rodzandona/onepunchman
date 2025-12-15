@@ -1,5 +1,6 @@
 using api.Data;
 using API;
+using API.Models;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services;
@@ -51,12 +52,7 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
+builder.Services.AddAuthorization();
 
 /* =======================
    MVC / JSON / CORS
@@ -159,25 +155,27 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-var basePath = app.Environment.IsDevelopment()
-    ? string.Empty
-    : "/onepunchman.api";
-
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.RoutePrefix = "swagger";
     options.SwaggerEndpoint(
-        $"{basePath}/swagger/api/swagger.json",
+        "/swagger/api/swagger.json",
         "API OnePunchMan Management"
     );
 });
 
 app.UseCors("CorsPolicy");
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseWhen(
+    context => !context.Request.Path.StartsWithSegments("/swagger"),
+    appBuilder =>
+    {
+        appBuilder.UseAuthentication();
+        appBuilder.UseAuthorization();
+    });
 
-app.MapControllers();
+app.MapControllers().RequireAuthorization();
 
 app.Run();
+
