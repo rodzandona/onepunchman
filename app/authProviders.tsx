@@ -6,11 +6,11 @@ interface User {
   id: number;
   username: string;
   email: string;
-  token?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  token: string | null; 
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -20,53 +20,60 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
+      const storedToken = localStorage.getItem("token"); 
+
+      if (storedUser) setUser(JSON.parse(storedUser));
+      if (storedToken) setToken(storedToken);
     } catch {
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
     } finally {
       setLoading(false);
     }
   }, []);
 
- async function login(username: string, password: string) {
-  const res = await fetch(`${environment.apiUrl}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      Username: username,
-      Password: password,
-    }),
-  });
+  async function login(username: string, password: string) {
+    const res = await fetch(`${environment.apiUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        Username: username,
+        Password: password,
+      }),
+    });
 
-  const text = await res.text();
-  console.log("Resposta da API:", text);
+    const text = await res.text();
+    const responseData = text ? JSON.parse(text) : {};
 
-  const responseData = text ? JSON.parse(text) : {};
+    if (!res.ok) {
+      throw new Error(responseData.message || "Erro ao fazer login");
+    }
 
-  if (!res.ok) {
-    throw new Error(responseData.message || "Erro ao fazer login");
+    const { token, ...userPayload } = responseData.data;
+    // API retorna { token, id, username, email }
+
+    setUser(userPayload);
+    setToken(token);
+
+    localStorage.setItem("user", JSON.stringify(userPayload));
+    localStorage.setItem("token", token);
   }
-
-  const userPayload = responseData.data;
-  setUser(userPayload);
-  localStorage.setItem("user", JSON.stringify(userPayload));
-}
-
 
   function logout() {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
