@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-const environment = { apiUrl: "https://localhost:5173/api" };
+const environment = { apiUrl: "http://localhost:5243/api" };
 
 interface User {
   id: number;
@@ -35,27 +35,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  async function login(username: string, password: string) {
-    const res = await fetch(`${environment.apiUrl}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Username: username,
-        Password: password,
-      }),
-    });
+ async function login(username: string, password: string) {
+  const res = await fetch(`${environment.apiUrl}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      Username: username,
+      Password: password,
+    }),
+  });
 
-    const responseData = await res.json();
+  const text = await res.text();
+  console.log("Resposta da API:", text);
 
-    if (!res.ok) {
-      throw new Error(responseData.message || "Erro ao fazer login");
-    }
+  const responseData = text ? JSON.parse(text) : {};
 
-    const userPayload = responseData.data;
-
-    setUser(userPayload);
-    localStorage.setItem("user", JSON.stringify(userPayload));
+  if (!res.ok) {
+    throw new Error(responseData.message || "Erro ao fazer login");
   }
+
+  const userPayload = responseData.data;
+  setUser(userPayload);
+  localStorage.setItem("user", JSON.stringify(userPayload));
+}
+
 
   function logout() {
     setUser(null);
