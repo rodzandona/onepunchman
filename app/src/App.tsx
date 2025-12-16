@@ -41,10 +41,21 @@ function AppContent() {
   return (
     <div className="h-screen flex flex-col bg-gray-50">
       {/* Conteúdo principal */}
-      <main className="flex-1 overflow-y-auto pb-28">
-        {activeTab === "home" && <Home />}
-        {activeTab === "settings" && <Settings />}
-      </main>
+     <main className="flex-1 overflow-y-auto pb-28">
+  {activeTab === "home" && <Home />}
+
+  {activeTab === "settings" && (
+    <Settings
+      onGoHome={() => setActiveTab("home")}
+      onLogout={() => {
+        localStorage.removeItem("user")
+        setActiveTab("home")
+        window.location.reload()
+      }}
+    />
+  )}
+</main>
+
 
       {/* Menu inferior para navegação */}
       <MenuBar activeTab={activeTab} onTabChange={setActiveTab} />
