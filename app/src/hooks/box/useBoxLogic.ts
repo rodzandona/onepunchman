@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Box } from "@/types/box.type";
+import {
+  criarBox,
+  adicionarProduto,
+  fecharBox,
+} from "@/services/boxService";
+
 
 export function useBoxLogic() {
-  const [boxes, setBoxes] = useState<Box[]>(() => {
-    try {
-      const saved = localStorage.getItem("boxes");
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
 
-  const [selectedBoxIndex, setSelectedBoxIndex] = useState<number | null>(null);
+  const [boxId, setBoxId] = useState<number | null>(null);
   const [boxName, setBoxName] = useState("");
   const [locked, setLocked] = useState(false);
 
@@ -24,94 +21,55 @@ export function useBoxLogic() {
 
   const barcodeRef = useRef<HTMLInputElement>(null);
 
-  /** Foco automático somente quando pode escanear */
   useEffect(() => {
     if (locked && !isModalOpen) {
-      barcodeRef.current?.focus?.();
+      barcodeRef.current?.focus();
     }
   }, [locked, items, isModalOpen]);
 
-  /** Mantém foco no scanner sempre que necessário */
-  useEffect(() => {
-    function keepFocus() {
-      if (!isModalOpen && locked && document.activeElement !== barcodeRef.current) {
-        barcodeRef.current?.focus?.();
-      }
+
+  async function createBox() {
+    if (!boxName.trim()) return;
+
+    try {
+      const box = await criarBox();
+
+      setBoxId(box.id);
+      setLocked(true);
+
+      toast.success("Box criada com sucesso!");
+      setTimeout(() => barcodeRef.current?.focus(), 100);
+    } catch (error) {
+      toast.error("Erro ao criar a box");
     }
-
-    document.addEventListener("click", keepFocus);
-    document.addEventListener("focusin", keepFocus);
-
-    return () => {
-      document.removeEventListener("click", keepFocus);
-      document.removeEventListener("focusin", keepFocus);
-    };
-  }, [locked, isModalOpen]);
-
-  // /** Salva caixas no localStorage */
-  // useEffect(() => {
-  //   localStorage.setItem("boxes", JSON.stringify(boxes));
-  // }, [boxes]);
-
-  /** Criar nova caixa */
-  function createBox() {
-    const name = boxName.trim().toUpperCase();
-    if (!name) return;
-
-    const exists = boxes.some(b => b.BoxCode === name);
-    if (exists) {
-      toast.warning("Esta caixa já existe!", { description: name });
-      return;
-    }
-
-    const newBox: Box = { BoxCode: name, Products: [] };
-
-    setBoxes(prev => [...prev, newBox]);
-    setSelectedBoxIndex(boxes.length);
-    setLocked(true);
-
-    setTimeout(() => barcodeRef.current?.focus?.(), 50);
   }
 
-  /** Enter no input da caixa */
   function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") createBox();
   }
 
-  /** Sincronizar alterações dos produtos */
-  function syncSelectedBox(updatedProducts: string[]) {
-    if (selectedBoxIndex === null) return;
 
-    setBoxes(prev => {
-      const draft = [...prev];
-      draft[selectedBoxIndex].Products = updatedProducts;
-      return draft;
-    });
-  }
+  async function addBarcode(code: string) {
+    if (!boxId) return;
 
-  /** Adicionar item via scanner */
-  function addBarcode(code: string) {
-    const exists = items.some(i => i.code === code);
+    try {
+      await adicionarProduto(boxId, code);
 
-    if (exists) {
-      toast.warning("Item já existe!", { description: code });
-      return;
+      setItems(prev => [...prev, { code, flash: true }]);
+
+      setTimeout(() => {
+        setItems(prev =>
+          prev.map(i =>
+            i.code === code ? { ...i, flash: false } : i
+          )
+        );
+      }, 300);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao adicionar produto");
     }
-
-    const updated = [...items, { code, flash: true }];
-    setItems(updated);
-    syncSelectedBox(updated.map(i => i.code));
-
-    setTimeout(() => {
-      setItems(prev =>
-        prev.map(i =>
-          i.code === code ? { ...i, flash: false } : i
-        )
-      );
-    }, 400);
   }
 
-  /** Remover item */
+
   function removeItem(code: string) {
     setItems(prev =>
       prev.map(i =>
@@ -120,48 +78,34 @@ export function useBoxLogic() {
     );
 
     setTimeout(() => {
-      const updated = items.filter(i => i.code !== code);
-      setItems(updated);
-      syncSelectedBox(updated.map(i => i.code));
+      setItems(prev => prev.filter(i => i.code !== code));
     }, 300);
   }
 
-  /** Reset para criar nova caixa */
+
+  async function finish() {
+    if (!boxId) return;
+
+    try {
+      await fecharBox(boxId);
+      setIsModalOpen(true);
+      toast.success("Box finalizada!");
+    } catch {
+      toast.error("Erro ao finalizar a box");
+    }
+  }
+
   function newBox() {
-    setSelectedBoxIndex(null);
+    setBoxId(null);
     setBoxName("");
     setItems([]);
     setLocked(false);
   }
 
-  /** Selecionar caixa existente */
-  function loadBox(index: number) {
-    const b = boxes[index];
-    setSelectedBoxIndex(index);
-    setBoxName(b.BoxCode);
-    setItems(b.Products.map(p => ({ code: p })));
-    setLocked(true);
-  }
-
-  /** Remover caixa */
-  function deleteBox(index: number) {
-    const filtered = boxes.filter((_, i) => i !== index);
-    setBoxes(filtered);
-
-    if (selectedBoxIndex === index) newBox();
-  }
-
-  /** Abrir modal de envio */
-  function finish() {
-    setIsModalOpen(true);
-  }
-
   return {
-    boxes,
-    items,
     boxName,
     setBoxName,
-    selectedBoxIndex,
+    items,
     locked,
 
     barcodeRef,
@@ -173,8 +117,6 @@ export function useBoxLogic() {
     removeItem,
 
     newBox,
-    loadBox,
-    deleteBox,
     finish,
   };
 }
