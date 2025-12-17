@@ -1,42 +1,55 @@
-﻿using API.Models;
+﻿using api.Data;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/export")]
     public class ExportController : ControllerBase
     {
+        private readonly DataBaseContext _context;
         private readonly ExcelService _excelService;
         private readonly EmailService _emailService;
 
-        public ExportController(ExcelService excelService, EmailService emailService)
+        public ExportController(
+            DataBaseContext context,
+            ExcelService excelService,
+            EmailService emailService)
         {
+            _context = context;
             _excelService = excelService;
             _emailService = emailService;
         }
 
         [HttpPost("send-excel")]
-        public async Task<IActionResult> SendExcel([FromBody] ExportRequest request)
+        public async Task<IActionResult> SendExcel([FromBody] string email)
         {
-            if (string.IsNullOrEmpty(request.Email) || request.Boxes == null || request.Boxes.Count == 0)
-                return BadRequest("Email and boxes are required.");
+            if (string.IsNullOrEmpty(email))
+                return BadRequest("Email is required.");
 
-            // 1. Gera o excel
-            var filePath = _excelService.GenerateExcel(request.Boxes);
+            var boxes = await _context.Boxes
+                .Include(b => b.BoxProduto)
+                    .ThenInclude(bp => bp.Produto)
+                .ToListAsync();
 
-            // 2. Envia o email
+            var filePath = _excelService.GenerateExcel(boxes);
+
             await _emailService.SendEmailWithAttachmentAsync(
-                request.Email,
+                email,
                 "Boxes and Products Report",
                 "Attached you will find the list of boxes and products.",
                 filePath
             );
 
-            return Ok(new { success = true, message = "Excel sent successfully." });
+            return Ok(new
+            {
+                success = true,
+                message = "Excel sent successfully."
+            });
         }
     }
 }

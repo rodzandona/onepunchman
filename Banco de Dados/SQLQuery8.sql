@@ -1,0 +1,6 @@
+USE BARCODE_LETICIA
+GO 
+
+ALTER TABLE BoxProdutos
+ADD CONSTRAINT UQ_Produto_Unico
+UNIQUE (ProdutoId);

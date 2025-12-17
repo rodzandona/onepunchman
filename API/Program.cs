@@ -104,6 +104,7 @@ builder.Services.AddDbContext<DataBaseContext>(options =>
    DEPENDENCY INJECTION
    ======================= */
 
+builder.Services.AddScoped<IBoxService, BoxService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddTransient<TokenService>();

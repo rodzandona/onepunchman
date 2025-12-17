@@ -14,6 +14,9 @@ namespace api.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Box> Boxes { get; set; }
+        public DbSet<Produto> Produtos { get; set; }
+        public DbSet<BoxProduto> BoxProdutos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +28,12 @@ namespace api.Data
                 entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             });
+
+            modelBuilder.Entity<BoxProduto>()
+               .HasIndex(bp => bp.ProdutoId)
+               .IsUnique();
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

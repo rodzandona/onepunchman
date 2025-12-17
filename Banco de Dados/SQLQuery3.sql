@@ -1,0 +1,13 @@
+USE BARCODE_LETICIA;
+GO 
+
+CREATE TABLE Produtos (
+Id INT IDENTITY PRIMARY KEY,
+CodigoBarras VARCHAR(100) NOT NULL UNIQUE,
+Nome VARCHAR(150) NULL
+);
+
+INSERT INTO dbo.Produtos (CodigoBarras, Nome)
+VALUES ('123655542178', 'teste');
+
+SELECT * FROM dbo.Produtos;
