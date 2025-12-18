@@ -27,8 +27,8 @@ builder.Configuration
    AUTENTICAÇÃO / AUTORIZAÇÃO
    ======================= */
 
-var jwtKey = builder.Configuration["JwtKey"]
-    ?? throw new ArgumentNullException("JwtKey", "JwtKey está faltando nas configurações.");
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new ArgumentNullException("Jwt:Key", "Jwt:Key está faltando nas configurações.");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

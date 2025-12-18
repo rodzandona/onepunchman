@@ -1,93 +1,74 @@
-﻿using api.Data;
-using API.Models;
+﻿
 using Microsoft.EntityFrameworkCore;
 
-namespace API.Services
+using api.Data;
+using API.Services;
+
+public class BoxService : IBoxService
 {
-    public class BoxService : IBoxService
+    private readonly DataBaseContext _context;
+
+    public BoxService(DataBaseContext context)
     {
-        private readonly DataBaseContext _context;
+        _context = context;
+    }
 
-        public BoxService(DataBaseContext context)
+    public async Task<Box> CriarBoxAsync(int usuarioId)
+    {
+        var box = new Box
         {
-            _context = context;
-        }
+            UsuarioId = usuarioId,
+            Status = "Aberta"
+        };
 
-        public async Task<Box> CriarBoxAsync(int usuarioId)
+        _context.Boxes.Add(box);
+        await _context.SaveChangesAsync();
+
+        return box;
+    }
+
+    public async Task AdicionarProdutoAsync(int boxId, string codigoBarras)
+    {
+        var box = await _context.Boxes
+            .FirstOrDefaultAsync(b => b.Id == boxId && b.Status == "Aberta");
+
+        if (box == null)
+            throw new Exception("Box não encontrada ou já finalizada.");
+
+        var produto = await _context.Produtos
+            .FirstOrDefaultAsync(p => p.CodigoBarras == codigoBarras);
+
+        if (produto == null)
         {
-            var box = new Box
-            {
-                UserId = usuarioId,
-                Status = BoxStatus.Aberta,
-                Quantidade = 0
-            };
-
-            _context.Boxes.Add(box);
-            await _context.SaveChangesAsync();
-
-            return box;
-        }
-
-        public async Task AdicionarProdutoAsync(int boxId, string codigoBarras)
-        {
-            var box = await _context.Boxes
-                .FirstOrDefaultAsync(b => b.Id == boxId && b.Status == BoxStatus.Aberta);
-
-            if (box == null)
-                throw new Exception("Box não encontrada ou não está aberta.");
-
-            var produto = await _context.Produtos
-                .FirstOrDefaultAsync(p => p.CodigoBarras == codigoBarras);
-
-            if (produto == null)
-            {
-                produto = new Produto
-                {
-                    CodigoBarras = codigoBarras
-                };
-
-                _context.Produtos.Add(produto);
-                await _context.SaveChangesAsync();
-            }
-
-            var produtoEmOutraBox = await _context.BoxProdutos
-                .AnyAsync(bp => bp.ProdutoId == produto.Id && bp.BoxId != boxId);
-
-            if (produtoEmOutraBox)
-                throw new Exception("Produto já pertence a outra caixa.");
-
-            var boxProduto = await _context.BoxProdutos
-                .FirstOrDefaultAsync(bp => bp.BoxId == boxId && bp.ProdutoId == produto.Id);
-
-            if (boxProduto == null)
-            {
-                boxProduto = new BoxProduto
-                {
-                    BoxId = boxId,
-                    ProdutoId = produto.Id,
-                    Quantidade = 1
-                };
-
-                _context.BoxProdutos.Add(boxProduto);
-                box.Quantidade++;
-            }
-            else
-            {
-                boxProduto.Quantidade++;
-            }
-
+            produto = new Produto { CodigoBarras = codigoBarras };
+            _context.Produtos.Add(produto);
             await _context.SaveChangesAsync();
         }
 
-        public async Task FecharBoxAsync(int boxId)
+        var jaUsado = await _context.BoxProdutos
+            .AnyAsync(bp => bp.ProdutoId == produto.Id);
+
+        if (jaUsado)
+            throw new Exception("Produto já pertence a uma caixa.");
+
+        var boxProduto = new BoxProduto
         {
-            var box = await _context.Boxes.FindAsync(boxId);
+            BoxId = boxId,
+            ProdutoId = produto.Id
+        };
 
-            if (box == null)
-                throw new Exception("Box não encontrada.");
+        _context.BoxProdutos.Add(boxProduto);
+        await _context.SaveChangesAsync();
+    }
 
-            box.Status = BoxStatus.Finalizada;
-            await _context.SaveChangesAsync();
-        }
+    public async Task FecharBoxAsync(int boxId)
+    {
+        var box = await _context.Boxes.FindAsync(boxId);
+
+        if (box == null)
+            throw new Exception("Box não encontrada.");
+
+        box.Status = "Finalizada";
+        await _context.SaveChangesAsync();
     }
 }

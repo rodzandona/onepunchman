@@ -1,13 +1,10 @@
-﻿namespace API.Models
+﻿using API.Models;
+
+public class Produto
 {
-    public class Produto
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
+    public string CodigoBarras { get; set; } = null!;
+    public string? Nome { get; set; }
 
-        public string CodigoBarras { get; set; } = string.Empty;
-
-        public string? Nome { get; set; }
-
-        public BoxProduto? BoxProduto { get; set; }
-    }
+    public ICollection<BoxProduto> BoxProdutos { get; set; } = new List<BoxProduto>();
 }

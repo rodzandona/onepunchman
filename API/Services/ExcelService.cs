@@ -21,11 +21,10 @@ namespace API.Services
 
             foreach (var box in boxes)
             {
-                foreach (var boxProduto in box.BoxProduto)
+                foreach (var boxProduto in box.BoxProdutos)
                 {
                     worksheet.Cell(row, 1).Value = box.Id;
                     worksheet.Cell(row, 2).Value = boxProduto.Produto.CodigoBarras;
-                    worksheet.Cell(row, 3).Value = boxProduto.Quantidade;
                     row++;
                 }
             }

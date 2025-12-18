@@ -32,7 +32,7 @@ namespace API.Services
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Token = _tokenService.GenerateToken(user.Username)
+                Token = _tokenService.GenerateToken(user)
             };
         }
     }

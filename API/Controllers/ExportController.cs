@@ -32,7 +32,7 @@ namespace API.Controllers
                 return BadRequest("Email is required.");
 
             var boxes = await _context.Boxes
-                .Include(b => b.BoxProduto)
+                .Include(b => b.BoxProdutos)
                     .ThenInclude(bp => bp.Produto)
                 .ToListAsync();
 
