@@ -1,41 +1,37 @@
-// src/services/boxService.ts
-
 const API_URL = import.meta.env.VITE_API_URL;
+
+function getToken() {
+  return localStorage.getItem("token");
+}
+
 export async function criarBox() {
   const response = await fetch(`${API_URL}/api/boxes`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${getToken()}`,
     },
   });
 
-  if (!response.ok) {
-    throw new Error("Erro ao criar box");
-  }
-
-  return response.json() as Promise<{ id: number }>;
+  if (!response.ok) throw new Error("Erro ao criar box");
+  return response.json();
 }
 
-export async function adicionarProduto(
-  boxId: number,
-  codigoBarras: string
-) {
+export async function adicionarProduto(boxId: number, codigoBarras: string) {
   const response = await fetch(
     `${API_URL}/api/boxes/${boxId}/produtos`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${getToken()}`,
       },
-      body: JSON.stringify(codigoBarras),
+      body: JSON.stringify({ codigoBarras }),
     }
   );
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error);
+    const text = await response.text();
+    throw new Error(text || "Erro ao adicionar produto");
   }
 }
 
@@ -45,12 +41,10 @@ export async function fecharBox(boxId: number) {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${getToken()}`,
       },
     }
   );
 
-  if (!response.ok) {
-    throw new Error("Erro ao fechar box");
-  }
+  if (!response.ok) throw new Error("Erro ao fechar box");
 }

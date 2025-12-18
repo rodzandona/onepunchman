@@ -6,9 +6,14 @@ import {
   fecharBox,
 } from "@/services/boxService";
 
+// Tipo para a Box
+export type BoxType = {
+  id: number;
+  name: string;
+  items: { code: string; flash?: boolean; removing?: boolean }[];
+};
 
 export function useBoxLogic() {
-
   const [boxId, setBoxId] = useState<number | null>(null);
   const [boxName, setBoxName] = useState("");
   const [locked, setLocked] = useState(false);
@@ -17,8 +22,10 @@ export function useBoxLogic() {
     { code: string; flash?: boolean; removing?: boolean }[]
   >([]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Novo estado para múltiplas boxes
+  const [boxes, setBoxes] = useState<BoxType[]>([]);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,7 +34,7 @@ export function useBoxLogic() {
     }
   }, [locked, items, isModalOpen]);
 
-
+  // Criar nova box
   async function createBox() {
     if (!boxName.trim()) return;
 
@@ -37,6 +44,12 @@ export function useBoxLogic() {
       setBoxId(box.id);
       setLocked(true);
 
+      // Adiciona a box ao array de boxes
+      setBoxes(prev => [
+        ...prev,
+        { id: box.id, name: boxName, items: [] },
+      ]);
+
       toast.success("Box criada com sucesso!");
       setTimeout(() => barcodeRef.current?.focus(), 100);
     } catch (error) {
@@ -44,18 +57,22 @@ export function useBoxLogic() {
     }
   }
 
-  function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") createBox();
-  }
-
-
+  // Adicionar código de barras à box atual
   async function addBarcode(code: string) {
     if (!boxId) return;
 
     try {
       await adicionarProduto(boxId, code);
 
+      // Atualiza lista de items da box atual
       setItems(prev => [...prev, { code, flash: true }]);
+
+      // Atualiza também no array de boxes
+      setBoxes(prev =>
+        prev.map(b =>
+          b.id === boxId ? { ...b, items: [...b.items, { code }] } : b
+        )
+      );
 
       setTimeout(() => {
         setItems(prev =>
@@ -69,7 +86,7 @@ export function useBoxLogic() {
     }
   }
 
-
+  // Remover item
   function removeItem(code: string) {
     setItems(prev =>
       prev.map(i =>
@@ -79,10 +96,17 @@ export function useBoxLogic() {
 
     setTimeout(() => {
       setItems(prev => prev.filter(i => i.code !== code));
+      setBoxes(prev =>
+        prev.map(b =>
+          b.id === boxId
+            ? { ...b, items: b.items.filter(i => i.code !== code) }
+            : b
+        )
+      );
     }, 300);
   }
 
-
+  // Finalizar box
   async function finish() {
     if (!boxId) return;
 
@@ -95,6 +119,7 @@ export function useBoxLogic() {
     }
   }
 
+  // Criar nova box (reset)
   function newBox() {
     setBoxId(null);
     setBoxName("");
@@ -102,20 +127,22 @@ export function useBoxLogic() {
     setLocked(false);
   }
 
+  function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") createBox();
+  }
+
   return {
     boxName,
     setBoxName,
     items,
+    boxes, // agora existe
     locked,
-
     barcodeRef,
     isModalOpen,
     setIsModalOpen,
-
     handleBoxInput,
     addBarcode,
     removeItem,
-
     newBox,
     finish,
   };

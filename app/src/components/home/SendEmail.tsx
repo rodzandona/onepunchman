@@ -9,14 +9,16 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from "sonner";
 
-import { Box } from '@/types/box.type';
+import type { Box } from "@/types/box.type";
 import { sendExcel } from "@/services/export.service";
+import { BoxType } from "@/hooks/box/useBoxLogic";
 
-interface SendEmailProps {
-  boxes: Box[];
+
+type SendEmailProps = {
   isOpen: boolean;
+  boxes: BoxType[];
   onClose: () => void;
-}
+};
 
 export default function SendEmail({ boxes, isOpen, onClose }: SendEmailProps) {
   const [email, setEmail] = useState('');
@@ -31,11 +33,17 @@ export default function SendEmail({ boxes, isOpen, onClose }: SendEmailProps) {
     setLoading(true);
 
     try {
-      await sendExcel({ email, boxes });
+      // 🔹 Mapeando BoxType para Box do backend
+      const backendBoxes: Box[] = boxes.map(b => ({
+        BoxCode: b.name,
+        Products: b.items.map(i => ({ CodigoBarras: i.code })),
+      }));
+
+      await sendExcel({ email, boxes: backendBoxes });
 
       toast.success("Conferência enviada com sucesso!");
-      localStorage.deleteItem("boxes");
-      onClose(); // fecha o modal
+      localStorage.removeItem("boxes"); // corrigido
+      onClose();
     } catch (err) {
       console.error(err);
       toast.error("Erro ao enviar conferência.");

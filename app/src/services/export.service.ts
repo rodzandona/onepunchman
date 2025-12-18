@@ -1,5 +1,5 @@
 import { api } from "./http/httpClient";
-import type { Box } from "@/types/box.type";
+import type { Box } from "@/types/box.type"; // ✅ import correto
 
 export interface SendExcelPayload {
   email: string;

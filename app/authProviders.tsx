@@ -10,7 +10,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null; 
+  token: string | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -20,16 +20,22 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null); 
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("token"); 
+      const storedToken = localStorage.getItem("token");
 
-      if (storedUser) setUser(JSON.parse(storedUser));
-      if (storedToken) setToken(storedToken);
+      if (storedUser && storedToken) {
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+      } else {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      }
+
     } catch {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
@@ -50,6 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const text = await res.text();
     const responseData = text ? JSON.parse(text) : {};
+    console.log("LOGIN RAW RESPONSE:", responseData);
+
 
     if (!res.ok) {
       throw new Error(responseData.message || "Erro ao fazer login");

@@ -2,13 +2,14 @@ import { useState } from "react"
 import MenuBar from "./components/MenuBar"
 import Home from "./pages/Home"
 import Settings from "./pages/Settings"
-import Login from "./pages/Login"
+import Login from "./pages/login"
 import { Toaster } from "sonner"
 import { AuthProvider, useAuth } from "../authProviders"
 
 
 function AppContent() {
-  const { user, loading } = useAuth()
+  const { user, loading, logout } = useAuth()
+
 
   // Estado responsável por controlar qual aba está ativa
   const [activeTab, setActiveTab] = useState<"home" | "settings">("home")
@@ -45,14 +46,14 @@ function AppContent() {
   {activeTab === "home" && <Home />}
 
   {activeTab === "settings" && (
-    <Settings
-      onGoHome={() => setActiveTab("home")}
-      onLogout={() => {
-        localStorage.removeItem("user")
-        setActiveTab("home")
-        window.location.reload()
-      }}
-    />
+  <Settings
+  onGoHome={() => setActiveTab("home")}
+  onLogout={() => {
+    logout()
+    setActiveTab("home")
+  }}
+/>
+
   )}
 </main>
 
