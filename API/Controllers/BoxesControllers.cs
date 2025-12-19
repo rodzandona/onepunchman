@@ -40,4 +40,11 @@ public class BoxesController : ControllerBase
         await _boxService.FecharBoxAsync(boxId);
         return Ok();
     }
+
+    [HttpOptions]
+    public IActionResult Options()
+    {
+        return Ok();
+    }
+
 }

@@ -1,11 +1,9 @@
 using api.Data;
-using API;
 using API.Models;
 using API.Repositories.Implementations;
 using API.Repositories.Interfaces;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -14,24 +12,17 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-/* =======================
-   CONFIGURA«’ES
-   ======================= */
-
+/* CONFIGURAÔøΩÔøΩES */
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddEnvironmentVariables();
 
-/* =======================
-   AUTENTICA«√O / AUTORIZA«√O
-   ======================= */
-
+/* JWT */
 var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new ArgumentNullException("Jwt:Key", "Jwt:Key est· faltando nas configuraÁıes.");
+    ?? throw new ArgumentNullException("Jwt:Key", "Jwt:Key estÔøΩ faltando nas configuraÔøΩÔøΩes.");
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -41,69 +32,49 @@ builder.Services
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
 
-            ValidIssuer = "api.onepunchman",
-            ValidAudience = "onepunchman-client",
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
 
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
             ),
-
             ClockSkew = TimeSpan.Zero
         };
     });
 
+
 builder.Services.AddAuthorization();
 
-/* =======================
-   MVC / JSON / CORS
-   ======================= */
+/* CORS */
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+    );
+});
 
-builder.Services
-    .AddCors(options =>
-    {
-        options.AddPolicy("CorsPolicy", policy =>
-            policy
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-    })
-    .AddMemoryCache()
-    .AddControllers()
+
+
+/* MVC / JSON */
+builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-    })
-    .ConfigureApiBehaviorOptions(options =>
-    {
-        options.InvalidModelStateResponseFactory = context =>
-        {
-            var errors = context.ModelState
-                .Where(x => x.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    x => x.Key,
-                    x => x.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
-                );
-
-            return new BadRequestObjectResult(
-                ApiResponse<object>.Fail("Erro de validaÁ„o.", errors)
-            );
-        };
     });
 
-/* =======================
-   BANCO DE DADOS
-   ======================= */
-
+/* DB */
 builder.Services.AddDbContext<DataBaseContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+    )
+);
 
-/* =======================
-   DEPENDENCY INJECTION
-   ======================= */
 
+/* DI */
 builder.Services.AddScoped<IBoxService, BoxService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<AuthService>();
@@ -111,19 +82,10 @@ builder.Services.AddTransient<TokenService>();
 builder.Services.AddTransient<ExcelService>();
 builder.Services.AddTransient<EmailService>();
 
-/* =======================
-   SWAGGER (JWT INTEGRADO)
-   ======================= */
-
+/* Swagger */
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("api", new OpenApiInfo
-    {
-        Title = "API - OnePunchMan Management",
-        Description = "Documento da API - OnePunchMan Management",
-        Version = "v1"
-    });
-
+    c.SwaggerDoc("api", new OpenApiInfo { Title = "API OnePunchMan", Version = "v1" });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -131,52 +93,35 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Informe o token JWT no formato: Bearer {seu_token}"
+        Description = "Informe o token JWT: Bearer {token}"
     });
-
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             Array.Empty<string>()
         }
     });
 });
 
-/* =======================
-   BUILD & PIPELINE
-   ======================= */
 
+/* PIPELINE */
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.RoutePrefix = "swagger";
-    options.SwaggerEndpoint(
-        "/swagger/api/swagger.json",
-        "API OnePunchMan Management"
-    );
-});
+app.UseSwaggerUI();
 
-app.UseCors("CorsPolicy");
+app.UseRouting();
 
-app.UseWhen(
-    context => !context.Request.Path.StartsWithSegments("/swagger"),
-    appBuilder =>
-    {
-        appBuilder.UseAuthentication();
-        appBuilder.UseAuthorization();
-    });
+app.UseCors("CorsPolicy");   // ‚¨ÖÔ∏è ANTES de auth
 
-app.MapControllers().RequireAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();
 
