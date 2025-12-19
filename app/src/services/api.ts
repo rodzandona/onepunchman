@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5243/api";
+const API_URL = "https://localhost:5243/api";
 
 export interface ApiFetchOptions extends RequestInit {
   headers?: HeadersInit;

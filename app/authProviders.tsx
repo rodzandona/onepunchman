@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 const environment = { apiUrl: "http://localhost:5243/api" };
 
@@ -10,7 +16,6 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -20,32 +25,32 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * 🔐 Inicialização da autenticação
+   * Se NÃO existe token → usuário deslogado
+   */
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("token");
+    const token = localStorage.getItem("Token");
 
-      if (storedUser && storedToken) {
-        setUser(JSON.parse(storedUser));
-        setToken(storedToken);
-      } else {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-      }
-
-    } catch {
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-    } finally {
+    if (!token) {
+      setUser(null);
       setLoading(false);
+      return;
     }
+
+    // ⚠️ Enquanto não existir endpoint /me,
+    // NÃO inventamos usuário aqui
+    setUser(null);
+    setLoading(false);
   }, []);
 
+  /**
+   * 🔑 LOGIN
+   */
   async function login(username: string, password: string) {
-    const res = await fetch(`${environment.apiUrl}/auth/login`, {
+    const res = await fetch(`${environment.apiUrl}/auth/Login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -54,34 +59,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }),
     });
 
-    const text = await res.text();
-    const responseData = text ? JSON.parse(text) : {};
-    console.log("LOGIN RAW RESPONSE:", responseData);
-
+    const data = await res.json();
 
     if (!res.ok) {
-      throw new Error(responseData.message || "Erro ao fazer login");
+      throw new Error(data.message || "Erro ao fazer login");
     }
 
-    const { token, ...userPayload } = responseData.data;
-    // API retorna { token, id, username, email }
+    /**
+     * Esperado da API:
+     * {
+     *   data: { id, username, email, token }
+     * }
+     */
+    const { token, ...userPayload } = data.data;
 
+    localStorage.setItem("Token", token);
     setUser(userPayload);
-    setToken(token);
-
-    localStorage.setItem("user", JSON.stringify(userPayload));
-    localStorage.setItem("token", token);
   }
 
+  /**
+   * 🚪 LOGOUT
+   */
   function logout() {
+    localStorage.removeItem("Token");
     setUser(null);
-    setToken(null);
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

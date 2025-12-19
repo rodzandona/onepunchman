@@ -4,27 +4,6 @@ import { useState } from "react";
 import { useAuth } from "../../authProviders";
 
 export default function Login() {
-  const { login } = useAuth();
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      await login(username, password);
-    } catch (err: any) {
-      setError(err.message || "Falha ao entrar.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       

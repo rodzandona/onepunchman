@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "../authProviders"
 
 function AppContent() {
   const { user, loading, logout } = useAuth()
+  console.log("AUTH:", { user, loading })
 
 
   // Estado responsável por controlar qual aba está ativa
