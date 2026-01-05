@@ -18,14 +18,11 @@ export function useBoxLogic() {
   const [boxName, setBoxName] = useState("");
   const [locked, setLocked] = useState(false);
 
-  const [items, setItems] = useState<
-    { code: string; flash?: boolean; removing?: boolean }[]
-  >([]);
-
-  // Novo estado para múltiplas boxes
+  const [items, setItems] = useState<{ code: string; flash?: boolean; removing?: boolean }[]>([]);
   const [boxes, setBoxes] = useState<BoxType[]>([]);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);         // loading para finalizar box
+  const [loadingAdd, setLoadingAdd] = useState(false);   // loading para adicionar produto
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -52,17 +49,19 @@ export function useBoxLogic() {
 
       toast.success("Box criada com sucesso!");
       setTimeout(() => barcodeRef.current?.focus(), 100);
-    } catch (error) {
-      toast.error("Erro ao criar a box");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao criar a box");
     }
   }
 
   // Adicionar código de barras à box atual
   async function addBarcode(code: string) {
-    if (!boxId) return;
+    if (!boxId || loadingAdd) return;   // evita múltiplos scans simultâneos
+    setLoadingAdd(true);
+    console.log("Adicionando código de barras:", code);
 
     try {
-      await adicionarProduto(boxId, code);
+      await adicionarProduto(boxId, code);  // ⚡ adicionarProduto já usa timeout no apiFetch
 
       // Atualiza lista de items da box atual
       setItems(prev => [...prev, { code, flash: true }]);
@@ -74,15 +73,16 @@ export function useBoxLogic() {
         )
       );
 
+      // Remove efeito de flash após 300ms
       setTimeout(() => {
         setItems(prev =>
-          prev.map(i =>
-            i.code === code ? { ...i, flash: false } : i
-          )
+          prev.map(i => i.code === code ? { ...i, flash: false } : i)
         );
       }, 300);
     } catch (error: any) {
       toast.error(error.message || "Erro ao adicionar produto");
+    } finally {
+      setLoadingAdd(false);
     }
   }
 
@@ -98,9 +98,7 @@ export function useBoxLogic() {
       setItems(prev => prev.filter(i => i.code !== code));
       setBoxes(prev =>
         prev.map(b =>
-          b.id === boxId
-            ? { ...b, items: b.items.filter(i => i.code !== code) }
-            : b
+          b.id === boxId ? { ...b, items: b.items.filter(i => i.code !== code) } : b
         )
       );
     }, 300);
@@ -108,14 +106,18 @@ export function useBoxLogic() {
 
   // Finalizar box
   async function finish() {
-    if (!boxId) return;
+    if (!boxId || loading) return;
+    setLoading(true);
 
     try {
-      await fecharBox(boxId);
+      await fecharBox(boxId); // ⚡ fecharBox já usa timeout no apiFetch
       setIsModalOpen(true);
+      console.log("AAAAAAAAAAAA:", boxId);
       toast.success("Box finalizada!");
-    } catch {
-      toast.error("Erro ao finalizar a box");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao finalizar a box");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -127,6 +129,7 @@ export function useBoxLogic() {
     setLocked(false);
   }
 
+  // Criar box ao apertar Enter
   function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") createBox();
   }
@@ -135,7 +138,7 @@ export function useBoxLogic() {
     boxName,
     setBoxName,
     items,
-    boxes, // agora existe
+    boxes,
     locked,
     barcodeRef,
     isModalOpen,
@@ -145,5 +148,7 @@ export function useBoxLogic() {
     removeItem,
     newBox,
     finish,
+    loading,
+    loadingAdd,
   };
 }

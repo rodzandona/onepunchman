@@ -3,24 +3,24 @@ import { useEffect, useRef } from "react";
 export function useBarcodeLogic(
   onScanned: (code: string) => void,
   isEnabled: boolean,
-  ignoredRef?: React.RefObject<HTMLInputElement>
+  ignoredRef?: React.RefObject<HTMLInputElement | null>
 ) {
   const bufferRef = useRef("");
   const startTimeRef = useRef<number | null>(null);
 
-  // Mantemos o ref porque o componente <Barcode /> usa
-  const barcodeRef = useRef<HTMLInputElement>(null);
 
-  // diferenciar scanner x teclado humano
+  const barcodeRef = useRef<HTMLInputElement | null>(null);
+
+
   const MIN_LENGTH = 4; 
-  const MAX_TOTAL_TIME = 300; 
+  const MAX_TOTAL_TIME = 1000; 
 
-  /** Scanner global (captura tudo que o dispositivo "digita") */
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (!isEnabled) return;
 
-      // Não interferir no input de nome da caixa
+
       if (ignoredRef?.current && document.activeElement === ignoredRef.current) {
         return;
       }
@@ -32,7 +32,7 @@ export function useBarcodeLogic(
         bufferRef.current = "";
       }
 
-      // ENTER finaliza a leitura
+  
       if (event.key === "Enter") {
         const totalTime = now - startTimeRef.current;
         const value = bufferRef.current.trim();
@@ -54,13 +54,13 @@ export function useBarcodeLogic(
           onScanned(value.toUpperCase());
         }
 
-        // sempre limpa o buffer
+ 
         bufferRef.current = "";
         startTimeRef.current = null;
         return;
       }
 
-      // Só queremos caracteres "reais"
+    
       if (event.key.length === 1) {
         bufferRef.current += event.key;
       }
@@ -72,7 +72,7 @@ export function useBarcodeLogic(
 
   function handleAutomaticScan(e: React.KeyboardEvent<HTMLInputElement>) {
     if (!isEnabled) return;
-    // Bloqueia qualquer digitação manual dentro do input invisível
+   
     e.preventDefault();
     e.stopPropagation();
   }

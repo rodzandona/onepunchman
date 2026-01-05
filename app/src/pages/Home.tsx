@@ -7,21 +7,25 @@ import BoxFooterActions from "@/components/box/BoxFooterActions";
 import BoxQuantityItems from "@/components/box/BoxQuantityItems";
 
 import { useBoxLogic, BoxType } from "@/hooks/box/useBoxLogic";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Barcode from "@/components/home/Barcode";
 import { useBarcodeLogic } from "@/hooks/barcode/useBarcodeLogic";
 import { Separator } from "@/components/ui/separator";
 import HeaderTitle from "@/components/home/HeaderTitle";
 
 export default function Home() {
-  const logic = useBoxLogic();
+ const logic = useBoxLogic();
 
-  // scanner global só funciona se locked = true
-  const barcode = useBarcodeLogic(
-    (code) => logic.addBarcode(code),
-    logic.locked && !logic.isModalOpen,
-    { current: document.getElementById("box-input") as HTMLInputElement }
-  );
+// ref REAL do React (não DOM direto)
+const boxInputRef = useRef<HTMLInputElement>(null);
+
+// scanner global só funciona se locked = true
+const barcode = useBarcodeLogic(
+  (code) => logic.addBarcode(code),
+  logic.locked && !logic.isModalOpen,
+  boxInputRef
+);
+
 
   // Ajuste de footer responsivo
   useEffect(() => {
