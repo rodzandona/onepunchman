@@ -4,6 +4,16 @@ import { useState } from "react";
 import { useAuth } from "../../authProviders";
 
 export default function Login() {
+  const { login, loading, error } = useAuth();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    login(username, password);
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       

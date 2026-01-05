@@ -1,47 +1,27 @@
-import { environment } from "@/environments/environment";
-
-
-const API_URL = environment.apiUrl
+import { apiFetch } from "@/services/http/apiFetch";
 
 export class HttpClient {
-  private baseUrl: string;
-
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
-  }
-
-  private getHeaders() {
-    return {
-      "Content-Type": "application/json"
-    };
-  }
-
   async get<T>(path: string): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "GET",
-      headers: this.getHeaders()
-    });
+    const res = await apiFetch(path, { method: "GET" });
 
     if (!res.ok) throw new Error(`GET ${path} failed`);
     return res.json();
   }
 
-  async post<T>(path: string, body: any): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
+  async post<T>(path: string, body?: any): Promise<T> {
+    const res = await apiFetch(path, {
       method: "POST",
-      headers: this.getHeaders(),
-      body: JSON.stringify(body)
+      body: body ? JSON.stringify(body) : undefined,
     });
 
     if (!res.ok) throw new Error(`POST ${path} failed`);
     return res.json();
   }
 
-  async put<T>(path: string, body: any): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
+  async put<T>(path: string, body?: any): Promise<T> {
+    const res = await apiFetch(path, {
       method: "PUT",
-      headers: this.getHeaders(),
-      body: JSON.stringify(body)
+      body: body ? JSON.stringify(body) : undefined,
     });
 
     if (!res.ok) throw new Error(`PUT ${path} failed`);
@@ -49,10 +29,7 @@ export class HttpClient {
   }
 
   async delete<T>(path: string): Promise<T> {
-    const res = await fetch(`${this.baseUrl}${path}`, {
-      method: "DELETE",
-      headers: this.getHeaders()
-    });
+    const res = await apiFetch(path, { method: "DELETE" });
 
     if (!res.ok) throw new Error(`DELETE ${path} failed`);
     return res.json();
@@ -60,4 +37,4 @@ export class HttpClient {
 }
 
 // Instância global
-export const api = new HttpClient(API_URL);
+export const api = new HttpClient();

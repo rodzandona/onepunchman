@@ -1,16 +1,9 @@
-const API_URL = "https://localhost:5243/api";
+const API_URL = "http://localhost:5243/api";
 
-export interface ApiFetchOptions extends RequestInit {
-  headers?: HeadersInit;
-}
-
-
-
-export async function apiFetch<T = unknown>(
+export async function apiFetch(
   endpoint: string,
-  options: ApiFetchOptions = {}
-): Promise<T | null> {
-
+  options: RequestInit = {}
+): Promise<Response> {
   const token = localStorage.getItem("Token");
 
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -18,18 +11,15 @@ export async function apiFetch<T = unknown>(
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
+      ...(options.headers || {}),
     },
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Erro na requisição à API");
+  // 🔐 Token inválido ou expirado
+  if (response.status === 401) {
+    localStorage.removeItem("Token");
+    throw new Error("Sessão expirada. Faça login novamente.");
   }
 
-  if (response.status === 204) {
-    return null;
-  }
-
-  return response.json() as Promise<T>;
+  return response;
 }

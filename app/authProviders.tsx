@@ -5,8 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-
-const environment = { apiUrl: "http://localhost:5243/api" };
+import { apiFetch } from "@/services/http/apiFetch";
 
 interface User {
   id: number;
@@ -17,6 +16,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  error: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -25,68 +25,66 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  /**
-   * 🔐 Inicialização da autenticação
-   * Se NÃO existe token → usuário deslogado
-   */
+
   useEffect(() => {
     const token = localStorage.getItem("Token");
 
     if (!token) {
       setUser(null);
-      setLoading(false);
-      return;
     }
 
-    // ⚠️ Enquanto não existir endpoint /me,
-    // NÃO inventamos usuário aqui
-    setUser(null);
     setLoading(false);
   }, []);
 
-  /**
-   * 🔑 LOGIN
-   */
   async function login(username: string, password: string) {
-    const res = await fetch(`${environment.apiUrl}/auth/Login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Username: username,
-        Password: password,
-      }),
-    });
+    try {
+      setLoading(true);
+      setError(null);
 
-    const data = await res.json();
+      const response = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          Username: username,
+          Password: password,
+        }),
+      });
 
-    if (!res.ok) {
-      throw new Error(data.message || "Erro ao fazer login");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao fazer login");
+      }
+
+      const { token, ...userPayload } = data.data;
+
+      localStorage.setItem("Token", token);
+      setUser(userPayload);
+    } catch (err: any) {
+      setError(err.message ?? "Erro inesperado");
+      throw err; // 👈 permite o componente reagir também
+    } finally {
+      setLoading(false);
     }
-
-    /**
-     * Esperado da API:
-     * {
-     *   data: { id, username, email, token }
-     * }
-     */
-    const { token, ...userPayload } = data.data;
-
-    localStorage.setItem("Token", token);
-    setUser(userPayload);
   }
 
-  /**
-   * 🚪 LOGOUT
-   */
   function logout() {
     localStorage.removeItem("Token");
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
