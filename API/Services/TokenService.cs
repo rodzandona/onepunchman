@@ -39,6 +39,9 @@ namespace API.Services
                 expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: credentials
             );
+            //Console.WriteLine("ISSUER: " + _configuration["Jwt:Issuer"]);
+            //Console.WriteLine("AUDIENCE: " + _configuration["Jwt:Audience"]);
+
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

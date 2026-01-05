@@ -41,6 +41,7 @@ public class BoxesController : ControllerBase
         return Ok();
     }
 
+    [AllowAnonymous]
     [HttpOptions]
     public IActionResult Options()
     {
