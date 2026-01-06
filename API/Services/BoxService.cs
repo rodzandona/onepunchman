@@ -49,7 +49,8 @@ public class BoxService : IBoxService
             .AnyAsync(bp => bp.ProdutoId == produto.Id);
 
         if (jaUsado)
-            throw new Exception("Produto já pertence a uma caixa.");
+            throw new InvalidOperationException("PRODUCT_ALREADY_IN_BOX"); //Não utiliza exception para mostrar ao usuário. o ASP.NET reconhece como erro
+
 
         var BoxProduto = new BoxProduto
         {

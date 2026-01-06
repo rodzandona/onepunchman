@@ -30,13 +30,16 @@ public class BoxesController : ControllerBase
 
             return Ok(new
             {
-                message = $"Caixa criada com sucesso!",
+                message = "Caixa criada com sucesso!",
                 data = box
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new
+            {
+                message = "Erro ao criar a caixa."
+            });
         }
     }
 
@@ -58,9 +61,28 @@ public class BoxesController : ControllerBase
                 message = "Produto adicionado à caixa com sucesso!"
             });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            if (ex.Message == "PRODUCT_ALREADY_IN_BOX")
+            {
+                return BadRequest(new
+                {
+                    message = "Este produto já existe em outra caixa."
+                });
+            }
+
+            return BadRequest(new
+            {
+                message = "Não foi possível adicionar o produto."
+            });
+        }
+
+        catch (Exception)
+        {
+            return BadRequest(new
+            {
+                message = "Erro inesperado ao adicionar produto."
+            });
         }
     }
 
@@ -76,9 +98,12 @@ public class BoxesController : ControllerBase
                 message = "Caixa finalizada com sucesso!"
             });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new
+            {
+                message = "Erro ao finalizar a caixa."
+            });
         }
     }
 
