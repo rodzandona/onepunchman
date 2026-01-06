@@ -116,6 +116,20 @@ export function useBoxLogic() {
     }
   }
 
+  //} catch (error: any) {
+  //const code = error?.response?.data?.code;
+
+ // if (code === "PRODUCT_ALREADY_IN_BOX") {
+   // toast.error("Este produto já existe em outra caixa.");
+  //  return;
+ // }
+
+ // toast.error("Erro ao adicionar produto");
+//} finally {
+  //setLoadingAdd(false);
+//}
+
+
   function removeItem(code: string) {
   
     setItems(prev =>

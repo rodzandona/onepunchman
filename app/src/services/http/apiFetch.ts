@@ -27,7 +27,7 @@ function getValidToken() {
 export async function apiFetch(
   endpoint: string,
   options: RequestInit = {},
-  timeoutMs: number = 5000 
+  timeoutMs: number = 1000 
 ): Promise<Response> {
   const token = getValidToken();
 
