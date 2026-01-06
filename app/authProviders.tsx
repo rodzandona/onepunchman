@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userPayload);
     } catch (err: any) {
       setError(err.message ?? "Erro inesperado");
-      throw err; // 👈 permite o componente reagir também
+      throw err;
     } finally {
       setLoading(false);
     }

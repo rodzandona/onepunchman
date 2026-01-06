@@ -6,7 +6,7 @@ import {
   fecharBox,
 } from "@/services/boxService";
 
-// Tipo para a Box
+// Tipo de cada box no front
 export type BoxType = {
   id: number;
   name: string;
@@ -14,15 +14,31 @@ export type BoxType = {
 };
 
 export function useBoxLogic() {
+
   const [boxId, setBoxId] = useState<number | null>(null);
+
   const [boxName, setBoxName] = useState("");
+
+
   const [locked, setLocked] = useState(false);
 
-  const [items, setItems] = useState<{ code: string; flash?: boolean; removing?: boolean }[]>([]);
+  const [items, setItems] = useState<
+    { code: string; flash?: boolean; removing?: boolean }[]
+  >([]);
+
+
   const [boxes, setBoxes] = useState<BoxType[]>([]);
+
+ 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);         // loading para finalizar box
-  const [loadingAdd, setLoadingAdd] = useState(false);   // loading para adicionar produto
+
+
+  const [loading, setLoading] = useState(false);
+
+ 
+  const [loadingAdd, setLoadingAdd] = useState(false);
+
+
   const barcodeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,52 +47,66 @@ export function useBoxLogic() {
     }
   }, [locked, items, isModalOpen]);
 
-  // Criar nova box
   async function createBox() {
     if (!boxName.trim()) return;
 
     try {
-      const box = await criarBox();
+ 
+      const response = await criarBox();
 
-      setBoxId(box.id);
+      
+      const id = response.data.id;
+
+      setBoxId(id);
+
+ 
       setLocked(true);
 
-      // Adiciona a box ao array de boxes
+  
       setBoxes(prev => [
         ...prev,
-        { id: box.id, name: boxName, items: [] },
+        { id, name: boxName, items: [] },
       ]);
 
       toast.success("Box criada com sucesso!");
+
       setTimeout(() => barcodeRef.current?.focus(), 100);
     } catch (error: any) {
       toast.error(error.message || "Erro ao criar a box");
     }
   }
 
-  // Adicionar código de barras à box atual
   async function addBarcode(code: string) {
-    if (!boxId || loadingAdd) return;   // evita múltiplos scans simultâneos
+    console.log("Código de barras recebido:", code);
+    console.log("Box ID atual:", boxId);
+
+  
+    if (!boxId || loadingAdd) return;
+
     setLoadingAdd(true);
-    console.log("Adicionando código de barras:", code);
 
     try {
-      await adicionarProduto(boxId, code);  // ⚡ adicionarProduto já usa timeout no apiFetch
+  
+      await adicionarProduto(boxId, code);
 
-      // Atualiza lista de items da box atual
+
       setItems(prev => [...prev, { code, flash: true }]);
 
-      // Atualiza também no array de boxes
+ 
       setBoxes(prev =>
         prev.map(b =>
-          b.id === boxId ? { ...b, items: [...b.items, { code }] } : b
+          b.id === boxId
+            ? { ...b, items: [...b.items, { code }] }
+            : b
         )
       );
 
-      // Remove efeito de flash após 300ms
+ 
       setTimeout(() => {
         setItems(prev =>
-          prev.map(i => i.code === code ? { ...i, flash: false } : i)
+          prev.map(i =>
+            i.code === code ? { ...i, flash: false } : i
+          )
         );
       }, 300);
     } catch (error: any) {
@@ -86,33 +116,39 @@ export function useBoxLogic() {
     }
   }
 
-  // Remover item
   function removeItem(code: string) {
+  
     setItems(prev =>
       prev.map(i =>
         i.code === code ? { ...i, removing: true } : i
       )
     );
 
+ 
     setTimeout(() => {
       setItems(prev => prev.filter(i => i.code !== code));
+
       setBoxes(prev =>
         prev.map(b =>
-          b.id === boxId ? { ...b, items: b.items.filter(i => i.code !== code) } : b
+          b.id === boxId
+            ? { ...b, items: b.items.filter(i => i.code !== code) }
+            : b
         )
       );
     }, 300);
   }
 
-  // Finalizar box
+
   async function finish() {
     if (!boxId || loading) return;
+
     setLoading(true);
 
     try {
-      await fecharBox(boxId); // ⚡ fecharBox já usa timeout no apiFetch
+      // Chamada para fechar a box no backend
+      await fecharBox(boxId);
+
       setIsModalOpen(true);
-      console.log("AAAAAAAAAAAA:", boxId);
       toast.success("Box finalizada!");
     } catch (error: any) {
       toast.error(error.message || "Erro ao finalizar a box");
@@ -120,8 +156,6 @@ export function useBoxLogic() {
       setLoading(false);
     }
   }
-
-  // Criar nova box (reset)
   function newBox() {
     setBoxId(null);
     setBoxName("");
@@ -129,7 +163,7 @@ export function useBoxLogic() {
     setLocked(false);
   }
 
-  // Criar box ao apertar Enter
+
   function handleBoxInput(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") createBox();
   }

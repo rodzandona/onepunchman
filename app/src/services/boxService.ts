@@ -15,7 +15,7 @@ export async function adicionarProduto(
   const response = await apiFetch(`/boxes/${boxId}/produtos`, {
     method: "POST",
     body: JSON.stringify({ codigoBarras }),
-  }, 5000); // timeout de 5 segundos
+  }, 1000); // timeout 
 
   if (!response.ok) {
     const text = await response.text();
