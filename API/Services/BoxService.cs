@@ -51,13 +51,13 @@ public class BoxService : IBoxService
         if (jaUsado)
             throw new Exception("Produto já pertence a uma caixa.");
 
-        var boxProduto = new BoxProduto
+        var BoxProduto = new BoxProduto
         {
             BoxId = boxId,
             ProdutoId = produto.Id
         };
 
-        _context.BoxProdutos.Add(boxProduto);
+        _context.BoxProdutos.Add(BoxProduto);
         await _context.SaveChangesAsync();
     }
 
