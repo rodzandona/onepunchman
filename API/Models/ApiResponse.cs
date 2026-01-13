@@ -2,12 +2,19 @@
 {
     public class ApiResponse<T>
     {
+
         public bool Success { get; init; }
+
         public string Message { get; init; } = string.Empty;
+
         public T? Data { get; init; }
+
         public Dictionary<string, string[]>? Errors { get; init; }
 
-        public static ApiResponse<T> Ok(T data, string message = "OK")
+        public static ApiResponse<T> Ok(
+            T data,
+            string message = "Operação realizada com sucesso"
+        )
             => new()
             {
                 Success = true,
@@ -15,7 +22,10 @@
                 Data = data
             };
 
-        public static ApiResponse<T> Fail(string message, Dictionary<string, string[]>? errors = null)
+        public static ApiResponse<T> Fail(
+            string message,
+            Dictionary<string, string[]>? errors = null
+        )
             => new()
             {
                 Success = false,

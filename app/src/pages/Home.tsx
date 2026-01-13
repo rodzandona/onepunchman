@@ -89,7 +89,7 @@ const barcode = useBarcodeLogic(
         </CardFooter>
       </Card>
 
-      {/* SendEmail agora recebe boxes corretamente */}
+      {/* SendEmail = recebe as boxes */}
       <SendEmail
         isOpen={logic.isModalOpen}
         boxes={logic.boxes} // agora ok

@@ -9,6 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Data;
+using Microsoft.Data.SqlClient;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,6 +87,13 @@ builder.Services.AddDbContext<DataBaseContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     )
 );
+
+builder.Services.AddScoped<IDbConnection>(sp =>
+    new SqlConnection(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
+
 
 
 builder.Services.AddScoped<IBoxService, BoxService>();

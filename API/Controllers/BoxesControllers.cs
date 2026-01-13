@@ -1,9 +1,11 @@
-﻿using API.Models;
+﻿
 using API.DTOs;
 using API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using System.Security.Claims;
+using Dapper;
 
 [ApiController]
 [Route("api/boxes")]
@@ -11,10 +13,12 @@ using System.Security.Claims;
 public class BoxesController : ControllerBase
 {
     private readonly IBoxService _boxService;
+    private readonly IDbConnection _connection;
 
-    public BoxesController(IBoxService boxService)
+    public BoxesController(IBoxService boxService, IDbConnection connection )
     {
         _boxService = boxService;
+        _connection = connection; 
     }
 
     [HttpPost]
@@ -107,10 +111,25 @@ public class BoxesController : ControllerBase
         }
     }
 
-    [AllowAnonymous]
-    [HttpOptions]
-    public IActionResult Options()
+
+    [HttpGet("finalized")] //Endpoint responsável apenas por listas as caixas finalizadas
+    public async Task<IActionResult> GetFinalizedBoxes()
     {
-        return Ok();
+        var username = User.FindFirstValue(ClaimTypes.Name);
+        if (string.IsNullOrEmpty(username))
+            return Unauthorized();
+        var result = await _connection.QueryAsync<FinalizedBoxDto>(
+            "sp_brc_select_boxes_finalized",
+            new{username},
+            commandType: CommandType.StoredProcedure
+            );
+        return Ok(result);
     }
-}
+
+    [AllowAnonymous]
+        [HttpOptions]
+        public IActionResult Options()
+        {
+            return Ok();
+        }
+    }
