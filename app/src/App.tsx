@@ -2,6 +2,7 @@ import { useState } from "react"
 import MenuBar from "./components/MenuBar"
 import Home from "./pages/Home"
 import Settings from "./pages/Settings"
+import Relatorios from "./pages/Relatorios"
 import Login from "./pages/login"
 import { Toaster } from "sonner"
 import { AuthProvider, useAuth } from "../authProviders"
@@ -13,7 +14,7 @@ function AppContent() {
 
 
   // Estado responsável por controlar qual aba está ativa
-  const [activeTab, setActiveTab] = useState<"home" | "settings">("home")
+  const [activeTab, setActiveTab] = useState<"home" | "settings" | "relatorios">("home")
 
   /**
    * Enquanto o sistema ainda está verificando
@@ -53,9 +54,12 @@ function AppContent() {
     logout()
     setActiveTab("home")
   }}
+
+  
 />
 
   )}
+  {activeTab === "relatorios" && <Relatorios />}
 </main>
 
 
@@ -67,12 +71,10 @@ function AppContent() {
     </div>
   )
 }
-
-/**
- * Componente raiz da aplicação
- * Aqui garantimos que tudo esteja
- * dentro do AuthProvider
- */
+//  * Componente raiz da aplicação
+//  * Aqui garantimos que tudo esteja
+//  * dentro do AuthProvider
+//  */
 export default function App() {
   return (
     <AuthProvider>

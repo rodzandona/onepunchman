@@ -1,4 +1,6 @@
 import { apiFetch } from "@/services/http/apiFetch";
+import { FinalizedBox } from "@/types/boxFinalized.type";
+
 
 export async function criarBox() {
   const response = await apiFetch("/boxes", {
@@ -21,6 +23,20 @@ export async function adicionarProduto(
     const text = await response.text();
     throw new Error(text);
   }
+
+  return response.json();
+}
+
+export async function getFinalizedBoxes(): Promise <FinalizedBox[]> {
+  const response = await apiFetch ("/boxes/finalized", {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Erro ao buscar boxes finalizadas");
+  }
+
+  return response.json();
 }
 
 export async function fecharBox(boxId: number) {
