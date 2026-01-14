@@ -1,8 +1,7 @@
-﻿
-using Microsoft.EntityFrameworkCore;
-
-using api.Data;
+﻿using api.Data;
+using API.Models;
 using API.Services;
+using Microsoft.EntityFrameworkCore;
 
 public class BoxService : IBoxService
 {
@@ -49,16 +48,15 @@ public class BoxService : IBoxService
             .AnyAsync(bp => bp.ProdutoId == produto.Id);
 
         if (jaUsado)
-            throw new InvalidOperationException("PRODUCT_ALREADY_IN_BOX"); //Não utiliza exception para mostrar ao usuário. o ASP.NET reconhece como erro
+            throw new InvalidOperationException("PRODUCT_ALREADY_IN_BOX");
 
-
-        var BoxProduto = new BoxProduto
+        var boxProduto = new BoxProduto
         {
             BoxId = boxId,
             ProdutoId = produto.Id
         };
 
-        _context.BoxProdutos.Add(BoxProduto);
+        _context.BoxProdutos.Add(boxProduto);
         await _context.SaveChangesAsync();
     }
 
