@@ -1,5 +1,9 @@
-﻿using API.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
+
+namespace API.Models;
+
+[Table("tb_brc_produtos")]
 public class Produto
 {
     public int Id { get; set; }

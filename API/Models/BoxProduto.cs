@@ -1,4 +1,10 @@
-﻿public class BoxProduto
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace API.Models
+{
+    [Table("tb_brc_tb_brc_box_produtos")]
+
+public class BoxProduto
 {
     public int Id { get; set; }
     public int BoxId { get; set; }
@@ -9,7 +15,7 @@
     public Produto Produto { get; set; } = null!;
 }
 
-
+}
 //Aqui é a relação entre produto e caixa. A FK não deixa que se repita um mesmo produto em várias caixas
 //1 caixa --n produtos
 //1 produto -- 1 caixa

@@ -133,7 +133,7 @@ app.Use(async (context, next) =>
 {
     if (context.Request.Method == HttpMethods.Options)
     {
-        context.Response.StatusCode = 200;
+        context.Response.StatusCode = 500;
         return;
     }
     await next();
