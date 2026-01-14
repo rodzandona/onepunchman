@@ -22,7 +22,7 @@ namespace api.Data
         {
             modelBuilder.Entity<User>(entity =>
             {
-                entity.ToTable("Users");
+                entity.ToTable("tb_brc_users");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(255);

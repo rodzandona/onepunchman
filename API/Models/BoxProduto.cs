@@ -1,7 +1,11 @@
-﻿public class BoxProduto
+﻿
+
+public class BoxProduto
 {
+
+    
     public int Id { get; set; }
-    public int BoxId { get; set; }
+    public int BoxId { get; set; } 
     public int ProdutoId { get; set; }
     public DateTime DataLeitura { get; set; } = DateTime.UtcNow;
 
