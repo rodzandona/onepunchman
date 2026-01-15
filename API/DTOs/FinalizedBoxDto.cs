@@ -1,8 +1,8 @@
 ﻿public class FinalizedBoxDto
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
-    public string Status { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public int TotalProducts { get; set; }
+    public int box_id { get; set; }
+    public int user_id { get; set; }
+    public string status { get; set; }
+    public DateTime created_at { get; set; }
+    public int total_products { get; set; }
 }

@@ -1,11 +1,12 @@
 ﻿
 using API.DTOs;
 using API.Services;
+using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
-using Dapper;
 
 [ApiController]
 [Route("api/boxes")]
@@ -118,12 +119,26 @@ public class BoxesController : ControllerBase
         var username = User.FindFirstValue(ClaimTypes.Name);
         if (string.IsNullOrEmpty(username))
             return Unauthorized();
-        var result = await _connection.QueryAsync<FinalizedBoxDto>(
-            "sp_brc_select_boxes_finalized",
-            new{username},
-            commandType: CommandType.StoredProcedure
-            );
-        return Ok(result);
+
+        try //Traduz o erro do banco 
+        {
+
+            var result = await _connection.QueryAsync<FinalizedBoxDto>(
+                "sp_brc_select_boxes_finalized",
+                new { username },
+                commandType: CommandType.StoredProcedure
+                );
+            return Ok(result);
+        }
+        catch(SqlException ex)
+        {
+            return BadRequest(new
+            {
+                message = ex.Message
+            }
+                );
+        }
+
     }
 
     [AllowAnonymous]

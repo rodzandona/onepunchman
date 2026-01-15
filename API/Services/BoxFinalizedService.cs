@@ -37,11 +37,11 @@ namespace API.Services
             {
                 boxes.Add(new FinalizedBoxDto
                 {
-                    Id = (int)reader["box_id"],
-                    UserId = (int)reader["user_id"],
-                    Status = (string)reader["status"],
-                    CreatedAt = (DateTime)reader["created_at"],
-                    TotalProducts = (int)reader["total_products"]
+                    box_id = (int)reader["box_id"],
+                    user_id = (int)reader["user_id"],
+                    status = (string)reader["status"],
+                    created_at = (DateTime)reader["created_at"],
+                    total_products = (int)reader["total_products"]
                 });
             }
 
