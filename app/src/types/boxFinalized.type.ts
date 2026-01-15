@@ -1,6 +1,6 @@
 export type FinalizedBox = {
-    id: number;
+    box_id: number;
     status: string;
-    createdAt: string;
-    totalProducts: number;
+    created_at: string;
+    total_products: number;
 };

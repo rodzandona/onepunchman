@@ -38,15 +38,15 @@ export default function Relatorios() {
 
             <div className="grid gap-4 mt-4">
                 {boxes.map((box) => (
-                    <Card key={box.id} className="p-4 flex justify-between">
+                    <Card key={box.box_id} className="p-4 flex justify-between">
                         <div>
-                            <p className="font-semibold">Box #{box.id}</p>
+                            <p className="font-semibold">Box #{box.box_id}</p>
                             <p className="text-sm text-gray-500">
-                                {new Date(box.createdAt).toLocaleDateString()}
+                                {new Date(box.created_at).toLocaleDateString()}
                             </p>
                         </div>
 
-                        <div>{box.totalProducts} produtos</div>
+                        <div>{box.total_products} produtos</div>
                     </Card>
                 ))}
             </div>
